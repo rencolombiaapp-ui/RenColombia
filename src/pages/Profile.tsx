@@ -27,15 +27,55 @@ import {
 } from "lucide-react";
 import { useAuth } from "@/lib/auth";
 import { useProfile, useUpdateProfile } from "@/hooks/use-profile";
+import { useActivePlan } from "@/hooks/use-has-active-plan";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
+import { Badge } from "@/components/ui/badge";
+import { hasActiveInsuranceApproval } from "@/services/insuranceService";
+import { useQuery } from "@tanstack/react-query";
+import { Shield, CheckCircle, Calendar, Star, Crown } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const Profile = () => {
   const { user } = useAuth();
   const { data: profile, isLoading } = useProfile();
   const updateProfile = useUpdateProfile();
+  const { data: activePlan, error: planError } = useActivePlan();
 
-  const [publisherType, setPublisherType] = useState<"individual" | "inmobiliaria">("individual");
+  // Verificar si el usuario es inquilino y tiene aprobación de seguro
+  const isTenant = profile?.role === "tenant" || (!profile?.publisher_type || profile.publisher_type === "select");
+  const { data: hasInsuranceApproval = false } = useQuery({
+    queryKey: ["has-insurance-approval", user?.id],
+    queryFn: () => hasActiveInsuranceApproval(user!.id),
+    enabled: !!user && isTenant,
+  });
+
+  // Función para obtener el nombre del plan de forma legible
+  const getPlanDisplayName = () => {
+    // Si hay error o no hay plan activo, usar plan por defecto
+    if (planError || !activePlan) {
+      // Determinar plan por defecto según el tipo de usuario
+      if (profile?.publisher_type === "inmobiliaria") {
+        return "Plan Inmobiliaria Free";
+      } else if (profile?.publisher_type === "individual" || profile?.role === "landlord") {
+        return "Plan Gratis";
+      } else {
+        return "Plan Gratis";
+      }
+    }
+
+    const planId = activePlan.plan_id;
+    if (planId === "tenant_free") return "Plan Gratis";
+    if (planId === "landlord_free") return "Plan Gratis";
+    if (planId === "landlord_pro") return "Plan PRO";
+    if (planId === "inmobiliaria_free") return "Plan Inmobiliaria Free";
+    if (planId === "inmobiliaria_pro") return "Plan PRO";
+    
+    return activePlan.plan_name || "Plan Gratis";
+  };
+
+  const isProPlan = (!planError && activePlan?.plan_id?.includes("_pro")) || false;
+
+  const [publisherType, setPublisherType] = useState<"select" | "individual" | "inmobiliaria">("select");
   const [companyName, setCompanyName] = useState("");
   const [companyLogoFile, setCompanyLogoFile] = useState<File | null>(null);
   const [companyLogoPreview, setCompanyLogoPreview] = useState<string>("");
@@ -49,7 +89,8 @@ const Profile = () => {
   // Cargar datos del perfil cuando estén disponibles
   useEffect(() => {
     if (profile) {
-      setPublisherType(profile.publisher_type || "individual");
+      // Si no tiene publisher_type o es null, mostrar "select" (inquilino)
+      setPublisherType(profile.publisher_type || "select");
       setCompanyName(profile.company_name || "");
       setCompanyLogoPreview(profile.company_logo || "");
       setPhone(profile.phone || "");
@@ -124,6 +165,11 @@ const Profile = () => {
     e.preventDefault();
 
     if (publisherType === "inmobiliaria" && !companyName.trim()) {
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "El nombre de la inmobiliaria es obligatorio",
+      });
       return;
     }
 
@@ -131,8 +177,13 @@ const Profile = () => {
     // Si avatarPreview está vacío pero había avatar_url, significa que se eliminó (se maneja en removeAvatar)
     const finalAvatarUrl = avatarFile || (avatarPreview || null);
 
+    // Si está en "select", es inquilino (tenant), de lo contrario es propietario (landlord)
+    const userRole = publisherType === "select" ? "tenant" : "landlord";
+    const finalPublisherType = publisherType === "select" ? null : publisherType;
+
     updateProfile.mutate({
-      publisher_type: publisherType,
+      role: userRole,
+      publisher_type: finalPublisherType === "select" ? null : finalPublisherType,
       company_name: publisherType === "inmobiliaria" ? companyName.trim() : null,
       company_logo: publisherType === "inmobiliaria" 
         ? (companyLogoFile || (companyLogoPreview || null))
@@ -191,6 +242,34 @@ const Profile = () => {
                   </p>
                 </div>
               </div>
+
+              {/* Plan Info */}
+              <div className="bg-gradient-to-r from-primary/10 to-accent/10 border border-primary/20 rounded-xl p-4">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    {isProPlan ? (
+                      <div className="w-10 h-10 rounded-lg bg-primary/20 flex items-center justify-center">
+                        <Crown className="w-5 h-5 text-primary" />
+                      </div>
+                    ) : (
+                      <div className="w-10 h-10 rounded-lg bg-muted flex items-center justify-center">
+                        <Star className="w-5 h-5 text-muted-foreground" />
+                      </div>
+                    )}
+                    <div>
+                      <p className="text-sm text-muted-foreground">Plan actual</p>
+                      <p className="font-semibold text-foreground">
+                        {getPlanDisplayName()}
+                      </p>
+                    </div>
+                  </div>
+                  <Link to="/planes">
+                    <Button variant="outline" size="sm">
+                      {isProPlan ? "Gestionar plan" : "Ver planes"}
+                    </Button>
+                  </Link>
+                </div>
+              </div>
             </div>
 
             {/* Avatar Section */}
@@ -204,11 +283,25 @@ const Profile = () => {
                       <User className="w-10 h-10" />
                     </AvatarFallback>
                   </Avatar>
+                  {/* Badge de aprobación de seguro para inquilinos */}
+                  {isTenant && hasInsuranceApproval && (
+                    <div className="absolute -bottom-1 -right-1 w-6 h-6 bg-primary rounded-full flex items-center justify-center border-2 border-background">
+                      <Shield className="w-3 h-3 text-primary-foreground" />
+                    </div>
+                  )}
                 </div>
 
                 {/* Avatar Actions */}
                 <div className="flex-grow space-y-2">
-                  <Label>Foto de perfil</Label>
+                  <div className="flex items-center gap-2">
+                    <Label>Foto de perfil</Label>
+                    {isTenant && hasInsuranceApproval && (
+                      <Badge variant="default" className="text-xs">
+                        <CheckCircle className="w-3 h-3 mr-1" />
+                        Cliente con aprobación
+                      </Badge>
+                    )}
+                  </div>
                   <div className="flex gap-2">
                     <Button
                       type="button"
@@ -235,6 +328,16 @@ const Profile = () => {
                   <p className="text-xs text-muted-foreground">
                     PNG, JPG hasta 5MB. La foto aparecerá en tu perfil y en tus reviews.
                   </p>
+                  {isTenant && (
+                    <div className="pt-2">
+                      <Link to="/seguros">
+                        <Button type="button" variant="outline" size="sm" className="text-xs">
+                          <Shield className="w-3 h-3 mr-1" />
+                          {hasInsuranceApproval ? "Gestionar seguros" : "Agregar aprobación de seguro"}
+                        </Button>
+                      </Link>
+                    </div>
+                  )}
                   <input
                     ref={avatarInputRef}
                     type="file"
@@ -254,23 +357,27 @@ const Profile = () => {
                 <Select
                   value={publisherType}
                   onValueChange={(value) => {
-                    setPublisherType(value as "individual" | "inmobiliaria");
+                    setPublisherType(value as "select" | "individual" | "inmobiliaria");
                     if (value === "individual") {
                       setCompanyName("");
-                      setCompanyLogo("");
+                      setCompanyLogoFile(null);
+                      setCompanyLogoPreview("");
                     }
                   }}
                 >
                   <SelectTrigger className="h-12">
-                    <SelectValue />
+                    <SelectValue placeholder="Seleccionar" />
                   </SelectTrigger>
                   <SelectContent>
+                    <SelectItem value="select">Seleccionar</SelectItem>
                     <SelectItem value="individual">Particular</SelectItem>
                     <SelectItem value="inmobiliaria">Inmobiliaria</SelectItem>
                   </SelectContent>
                 </Select>
                 <p className="text-xs text-muted-foreground">
-                  {publisherType === "individual"
+                  {publisherType === "select"
+                    ? "Si no seleccionas nada, se guardará como Inquilino por defecto"
+                    : publisherType === "individual"
                     ? "Tus inmuebles aparecerán publicados por ti como particular."
                     : "Tus inmuebles aparecerán bajo el nombre de tu inmobiliaria."}
                 </p>

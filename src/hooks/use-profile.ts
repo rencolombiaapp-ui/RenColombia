@@ -13,20 +13,31 @@ export function useProfile() {
     queryFn: async () => {
       if (!user) return null;
 
-      const { data, error } = await supabase
-        .from("profiles")
-        .select("*")
-        .eq("id", user.id)
-        .single();
+      try {
+        const { data, error } = await supabase
+          .from("profiles")
+          .select("*")
+          .eq("id", user.id)
+          .single();
 
-      if (error) {
-        console.error("Error fetching profile:", error);
+        if (error) {
+          // Si la tabla no existe aún, retornar null silenciosamente
+          if (error.code === "42P01" || error.message?.includes("does not exist")) {
+            return null;
+          }
+          // Silenciar otros errores también
+          return null;
+        }
+
+        return data as Profile;
+      } catch (error) {
+        // Silenciar errores para no romper la UI
         return null;
       }
-
-      return data as Profile;
     },
     enabled: !!user,
+    retry: false,
+    throwOnError: false, // No lanzar errores, solo retornar null
   });
 }
 
@@ -38,7 +49,8 @@ export function useUpdateProfile() {
 
   return useMutation({
     mutationFn: async (updates: {
-      publisher_type?: "individual" | "inmobiliaria";
+      role?: "tenant" | "landlord";
+      publisher_type?: "individual" | "inmobiliaria" | null;
       company_name?: string | null;
       company_logo?: File | string | null; // Puede ser File (nuevo) o string (URL existente)
       phone?: string | null;
@@ -151,7 +163,8 @@ export function useUpdateProfile() {
 
       // Preparar actualización
       const updateData: {
-        publisher_type?: "individual" | "inmobiliaria";
+        role?: "tenant" | "landlord";
+        publisher_type?: "individual" | "inmobiliaria" | null;
         company_name?: string | null;
         company_logo?: string | null;
         phone?: string | null;

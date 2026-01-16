@@ -123,21 +123,32 @@ export function useIsLandlord() {
     queryFn: async () => {
       if (!user) return false;
 
-      // Solo contar propiedades, no traerlas todas (más eficiente)
-      const { count, error } = await supabase
-        .from("properties")
-        .select("*", { count: "exact", head: true })
-        .eq("owner_id", user.id);
+      try {
+        // Solo contar propiedades, no traerlas todas (más eficiente)
+        const { count, error } = await supabase
+          .from("properties")
+          .select("*", { count: "exact", head: true })
+          .eq("owner_id", user.id);
 
-      if (error) {
-        console.error("Error checking landlord status:", error);
+        if (error) {
+          // Si la tabla no existe aún, retornar false silenciosamente
+          if (error.code === "42P01" || error.message?.includes("does not exist")) {
+            return false;
+          }
+          console.error("Error checking landlord status:", error);
+          return false;
+        }
+
+        return (count || 0) > 0;
+      } catch (error) {
+        // Silenciar errores para no romper la UI
         return false;
       }
-
-      return (count || 0) > 0;
     },
     enabled: !!user,
     staleTime: 5 * 60 * 1000, // Cache por 5 minutos para evitar llamadas innecesarias
+    retry: false,
+    throwOnError: false, // No lanzar errores, solo retornar false
   });
 }
 

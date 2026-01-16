@@ -22,15 +22,16 @@ export function useProperties(options: UsePropertiesOptions = {}) {
   return useQuery({
     queryKey: ["properties", options],
     queryFn: async () => {
-      let query = supabase
-        .from("properties")
-        .select(`
-          *,
-          property_images (*),
-          profiles (*)
-        `)
-        .eq("status", "published")
-        .order("created_at", { ascending: false });
+      try {
+        let query = supabase
+          .from("properties")
+          .select(`
+            *,
+            property_images (*),
+            profiles (*)
+          `)
+          .eq("status", "published")
+          .order("created_at", { ascending: false });
 
       // Filtros opcionales (excepto ciudad que se filtra localmente para normalización de tildes)
       if (options.featured) {
@@ -54,12 +55,17 @@ export function useProperties(options: UsePropertiesOptions = {}) {
         query = query.limit(options.limit);
       }
 
-      const { data, error } = await query;
+        const { data, error } = await query;
 
-      if (error) {
-        console.error("Error fetching properties:", error);
-        return [];
-      }
+        if (error) {
+          // Si la tabla no existe aún, retornar array vacío silenciosamente
+          if (error.code === "42P01" || error.message?.includes("does not exist")) {
+            console.warn("Properties table does not exist yet");
+            return [];
+          }
+          console.error("Error fetching properties:", error);
+          return [];
+        }
 
       let filteredData = (data || []) as PropertyWithImages[];
 
@@ -100,8 +106,13 @@ export function useProperties(options: UsePropertiesOptions = {}) {
         filteredData = filteredData.slice(0, options.limit);
       }
 
-      return filteredData;
+        return filteredData;
+      } catch (error) {
+        console.error("Error in useProperties:", error);
+        return [];
+      }
     },
+    retry: false,
   });
 }
 
@@ -114,18 +125,29 @@ export function usePropertiesCount() {
   return useQuery({
     queryKey: ["properties-count"],
     queryFn: async () => {
-      const { count, error } = await supabase
-        .from("properties")
-        .select("*", { count: "exact", head: true })
-        .eq("status", "published");
+      try {
+        const { count, error } = await supabase
+          .from("properties")
+          .select("*", { count: "exact", head: true })
+          .eq("status", "published");
 
-      if (error) {
-        console.error("Error counting properties:", error);
+        if (error) {
+          // Si la tabla no existe aún, retornar 0 silenciosamente
+          if (error.code === "42P01" || error.message?.includes("does not exist")) {
+            console.warn("Properties table does not exist yet");
+            return 0;
+          }
+          console.error("Error counting properties:", error);
+          return 0;
+        }
+
+        return count || 0;
+      } catch (error) {
+        console.error("Error in usePropertiesCount:", error);
         return 0;
       }
-
-      return count || 0;
     },
+    retry: false,
   });
 }
 

@@ -90,10 +90,10 @@ const Footer = () => {
               </li>
               <li>
                 <Link
-                  to="/precios"
+                  to="/planes"
                   className="text-white/70 hover:text-accent transition-colors text-sm"
                 >
-                  Precios
+                  Planes
                 </Link>
               </li>
             </ul>
