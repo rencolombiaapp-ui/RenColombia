@@ -82,6 +82,13 @@ const Auth = () => {
             title: "¡Registro exitoso!",
             description: "Revisa tu correo para confirmar tu cuenta.",
           });
+          // Limpiar el formulario después de un registro exitoso
+          setFormData({
+            name: "",
+            email: "",
+            password: "",
+            confirmPassword: "",
+          });
         }
       }
     } catch (error) {
