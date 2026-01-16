@@ -1,9 +1,11 @@
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import { Home, Mail, Phone, MapPin, Facebook, Instagram, Linkedin } from "lucide-react";
+import { Home, Mail, Phone, MapPin, Facebook, Instagram, Linkedin, Eye } from "lucide-react";
+import { useSiteVisits } from "@/hooks/use-site-visits";
 
 const Footer = () => {
   const location = useLocation();
   const navigate = useNavigate();
+  const { totalVisits } = useSiteVisits();
 
   const handleHowItWorksClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
     e.preventDefault();
@@ -147,6 +149,13 @@ const Footer = () => {
           <p className="text-white/50 text-sm">
             © 2026 RenColombia. Todos los derechos reservados.
           </p>
+          
+          {/* Contador de visitas */}
+          <div className="flex items-center gap-2 text-white/60 text-sm">
+            <Eye className="w-4 h-4" />
+            <span>Visitas:</span>
+            <span className="font-semibold text-white/80">{totalVisits.toLocaleString()}</span>
+          </div>
         </div>
       </div>
     </footer>
