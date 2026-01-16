@@ -1,0 +1,215 @@
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Playfair+Display:wght@400;500;600;700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Optimización de renderizado de imágenes para mejor calidad */
+@layer utilities {
+  .image-rendering\: -webkit-optimize-contrast {
+    image-rendering: -webkit-optimize-contrast;
+    image-rendering: crisp-edges;
+  }
+  
+  .will-change-opacity {
+    will-change: opacity;
+  }
+}
+
+/* RenColombia Design System - Colombian-inspired Real Estate Platform */
+
+@layer base {
+  :root {
+    /* Primary - Emerald Green (trust, growth, Colombia's nature) */
+    --primary: 158 64% 32%;
+    --primary-foreground: 0 0% 100%;
+    
+    /* Background - Warm off-white */
+    --background: 40 33% 98%;
+    --foreground: 220 25% 10%;
+
+    /* Cards - Pure white with subtle warmth */
+    --card: 0 0% 100%;
+    --card-foreground: 220 25% 10%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 220 25% 10%;
+
+    /* Secondary - Warm sand */
+    --secondary: 35 30% 94%;
+    --secondary-foreground: 220 25% 15%;
+
+    /* Muted - Soft gray with warmth */
+    --muted: 40 20% 94%;
+    --muted-foreground: 220 10% 46%;
+
+    /* Accent - Golden/amber for CTAs and highlights */
+    --accent: 38 92% 50%;
+    --accent-foreground: 220 25% 10%;
+
+    /* Destructive */
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 100%;
+
+    /* UI Elements */
+    --border: 40 20% 88%;
+    --input: 40 20% 88%;
+    --ring: 158 64% 32%;
+
+    --radius: 0.75rem;
+
+    /* Custom tokens for RenColombia */
+    --emerald: 158 64% 32%;
+    --emerald-light: 158 50% 45%;
+    --emerald-dark: 158 70% 22%;
+    --gold: 38 92% 50%;
+    --gold-light: 42 95% 65%;
+    --sand: 35 30% 94%;
+    --terracotta: 15 60% 55%;
+    --coffee: 25 35% 25%;
+
+    /* Gradients */
+    --gradient-hero: linear-gradient(135deg, hsl(158 64% 32%) 0%, hsl(158 50% 45%) 50%, hsl(38 92% 50%) 100%);
+    --gradient-card: linear-gradient(180deg, hsl(0 0% 100%) 0%, hsl(40 33% 98%) 100%);
+    --gradient-accent: linear-gradient(135deg, hsl(38 92% 50%) 0%, hsl(42 95% 65%) 100%);
+    
+    /* Shadows */
+    --shadow-sm: 0 1px 2px 0 hsl(220 25% 10% / 0.03);
+    --shadow-md: 0 4px 6px -1px hsl(220 25% 10% / 0.05), 0 2px 4px -2px hsl(220 25% 10% / 0.05);
+    --shadow-lg: 0 10px 15px -3px hsl(220 25% 10% / 0.08), 0 4px 6px -4px hsl(220 25% 10% / 0.05);
+    --shadow-xl: 0 20px 25px -5px hsl(220 25% 10% / 0.1), 0 8px 10px -6px hsl(220 25% 10% / 0.05);
+    --shadow-card: 0 4px 20px -2px hsl(220 25% 10% / 0.08);
+    --shadow-card-hover: 0 12px 30px -4px hsl(220 25% 10% / 0.15);
+
+    /* Sidebar */
+    --sidebar-background: 0 0% 98%;
+    --sidebar-foreground: 240 5.3% 26.1%;
+    --sidebar-primary: 158 64% 32%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 40 20% 94%;
+    --sidebar-accent-foreground: 220 25% 15%;
+    --sidebar-border: 40 20% 88%;
+    --sidebar-ring: 158 64% 32%;
+  }
+
+  .dark {
+    --background: 220 25% 8%;
+    --foreground: 40 20% 96%;
+
+    --card: 220 25% 12%;
+    --card-foreground: 40 20% 96%;
+
+    --popover: 220 25% 12%;
+    --popover-foreground: 40 20% 96%;
+
+    --primary: 158 55% 45%;
+    --primary-foreground: 220 25% 8%;
+
+    --secondary: 220 20% 18%;
+    --secondary-foreground: 40 20% 96%;
+
+    --muted: 220 20% 18%;
+    --muted-foreground: 40 10% 60%;
+
+    --accent: 38 85% 55%;
+    --accent-foreground: 220 25% 8%;
+
+    --destructive: 0 70% 50%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 220 20% 20%;
+    --input: 220 20% 20%;
+    --ring: 158 55% 45%;
+
+    --sidebar-background: 220 25% 10%;
+    --sidebar-foreground: 40 20% 90%;
+    --sidebar-primary: 158 55% 45%;
+    --sidebar-primary-foreground: 220 25% 8%;
+    --sidebar-accent: 220 20% 18%;
+    --sidebar-accent-foreground: 40 20% 96%;
+    --sidebar-border: 220 20% 20%;
+    --sidebar-ring: 158 55% 45%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground antialiased;
+    font-family: 'Plus Jakarta Sans', sans-serif;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    font-family: 'Playfair Display', serif;
+  }
+}
+
+@layer components {
+  .text-gradient {
+    @apply bg-clip-text text-transparent;
+    background-image: var(--gradient-hero);
+  }
+
+  .card-elevated {
+    box-shadow: var(--shadow-card);
+    transition: box-shadow 0.3s ease, transform 0.3s ease;
+  }
+
+  .card-elevated:hover {
+    box-shadow: var(--shadow-card-hover);
+    transform: translateY(-4px);
+  }
+
+  .btn-gradient {
+    background-image: var(--gradient-accent);
+    @apply text-foreground font-semibold;
+  }
+
+  .glass-effect {
+    @apply backdrop-blur-md bg-white/80;
+  }
+}
+
+@layer utilities {
+  .animate-fade-in {
+    animation: fadeIn 0.5s ease-out forwards;
+  }
+
+  .animate-slide-up {
+    animation: slideUp 0.6s ease-out forwards;
+  }
+
+  .animate-scale-in {
+    animation: scaleIn 0.4s ease-out forwards;
+  }
+
+  @keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+
+  @keyframes slideUp {
+    from { 
+      opacity: 0; 
+      transform: translateY(20px); 
+    }
+    to { 
+      opacity: 1; 
+      transform: translateY(0); 
+    }
+  }
+
+  @keyframes scaleIn {
+    from { 
+      opacity: 0; 
+      transform: scale(0.95); 
+    }
+    to { 
+      opacity: 1; 
+      transform: scale(1); 
+    }
+  }
+}

@@ -1,0 +1,128 @@
+<!--
+  TEMPLATE DE CORREO DE CONFIRMACIÓN - RENCOLOMBIA
+  
+  INSTRUCCIONES:
+  1. Ve a: https://supabase.com/dashboard/project/bvzoditkkhvppevqvmcn/auth/templates
+  2. Selecciona "Confirm signup"
+  3. Copia y pega este HTML en el campo "Body"
+  4. En "Subject" escribe: Confirma tu correo - RenColombia
+  5. Guarda los cambios
+  
+  VARIABLES IMPORTANTES (NO MODIFICAR):
+  - {{ .ConfirmationURL }} = Link de confirmación
+  - {{ .Email }} = Email del usuario
+  - {{ .SiteURL }} = URL del sitio
+-->
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Confirma tu correo - RenColombia</title>
+</head>
+<body style="margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f5f3ef;">
+  <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background-color: #f5f3ef;">
+    <tr>
+      <td align="center" style="padding: 40px 20px;">
+        <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="max-width: 600px; background-color: #ffffff; border-radius: 16px; box-shadow: 0 4px 20px rgba(0,0,0,0.08);">
+          
+          <!-- Header con Logo -->
+          <tr>
+            <td align="center" style="padding: 40px 40px 30px 40px;">
+              <table role="presentation" cellspacing="0" cellpadding="0">
+                <tr>
+                  <td style="background-color: #1a7a5c; width: 50px; height: 50px; border-radius: 12px; text-align: center; vertical-align: middle;">
+                    <span style="color: #ffffff; font-size: 24px;">🏠</span>
+                  </td>
+                  <td style="padding-left: 12px;">
+                    <span style="font-size: 24px; font-weight: bold; color: #1a1a1a;">Ren<span style="color: #d4a017;">Colombia</span></span>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+          
+          <!-- Contenido Principal -->
+          <tr>
+            <td style="padding: 0 40px 30px 40px;">
+              <h1 style="margin: 0 0 20px 0; font-size: 28px; font-weight: bold; color: #1a1a1a; text-align: center;">
+                Confirma tu correo electrónico
+              </h1>
+              <p style="margin: 0 0 25px 0; font-size: 16px; line-height: 1.6; color: #4a4a4a; text-align: center;">
+                ¡Bienvenido a RenColombia! Estás a un paso de encontrar tu hogar ideal en Colombia.
+              </p>
+              <p style="margin: 0 0 30px 0; font-size: 16px; line-height: 1.6; color: #4a4a4a; text-align: center;">
+                Haz clic en el botón de abajo para verificar tu dirección de correo electrónico y activar tu cuenta.
+              </p>
+            </td>
+          </tr>
+          
+          <!-- Botón de Acción -->
+          <tr>
+            <td align="center" style="padding: 0 40px 30px 40px;">
+              <a href="{{ .ConfirmationURL }}" 
+                 style="display: inline-block; 
+                        background-color: #1a7a5c; 
+                        color: #ffffff; 
+                        text-decoration: none; 
+                        font-size: 16px; 
+                        font-weight: 600; 
+                        padding: 16px 40px; 
+                        border-radius: 10px;
+                        box-shadow: 0 4px 12px rgba(26, 122, 92, 0.3);">
+                Verificar correo electrónico
+              </a>
+            </td>
+          </tr>
+          
+          <!-- Texto alternativo -->
+          <tr>
+            <td style="padding: 0 40px 30px 40px;">
+              <p style="margin: 0; font-size: 14px; line-height: 1.6; color: #888888; text-align: center;">
+                Si el botón no funciona, copia y pega este enlace en tu navegador:
+              </p>
+              <p style="margin: 10px 0 0 0; font-size: 12px; line-height: 1.6; color: #1a7a5c; text-align: center; word-break: break-all;">
+                {{ .ConfirmationURL }}
+              </p>
+            </td>
+          </tr>
+          
+          <!-- Separador -->
+          <tr>
+            <td style="padding: 0 40px;">
+              <hr style="border: none; border-top: 1px solid #e8e8e8; margin: 0;">
+            </td>
+          </tr>
+          
+          <!-- Footer -->
+          <tr>
+            <td style="padding: 30px 40px;">
+              <p style="margin: 0 0 10px 0; font-size: 14px; color: #888888; text-align: center;">
+                Si no creaste esta cuenta, puedes ignorar este correo.
+              </p>
+              <p style="margin: 0; font-size: 14px; color: #888888; text-align: center;">
+                ¿Necesitas ayuda? Escríbenos a 
+                <a href="mailto:soporte@rencolombia.com" style="color: #1a7a5c; text-decoration: none;">soporte@rencolombia.com</a>
+              </p>
+            </td>
+          </tr>
+          
+          <!-- Copyright -->
+          <tr>
+            <td style="padding: 20px 40px 30px 40px; background-color: #1a1a1a; border-radius: 0 0 16px 16px;">
+              <p style="margin: 0; font-size: 12px; color: #888888; text-align: center;">
+                © 2026 RenColombia. Todos los derechos reservados.
+              </p>
+              <p style="margin: 8px 0 0 0; font-size: 12px; color: #888888; text-align: center;">
+                Bogotá, Colombia 🇨🇴
+              </p>
+            </td>
+          </tr>
+          
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>
