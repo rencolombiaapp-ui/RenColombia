@@ -1,15 +1,19 @@
 import { useState, useEffect, useRef } from "react";
-import { useParams, Link } from "react-router-dom";
+import { useParams, Link, useNavigate } from "react-router-dom";
 import { useProperty } from "@/hooks/use-properties";
 import { useFavoriteIds, useToggleFavorite } from "@/hooks/use-favorites";
 import { useIncrementViews } from "@/hooks/use-my-properties";
 import { useAuth } from "@/lib/auth";
 import { useToast } from "@/hooks/use-toast";
 import { useUserReview } from "@/hooks/use-reviews";
+import { createConversation } from "@/services/messagingService";
+import { useProfile } from "@/hooks/use-profile";
+import { useCreateIntention, useHasIntention } from "@/hooks/use-intentions";
 import Navbar from "@/components/layout/Navbar";
 import ReviewModal from "@/components/reviews/ReviewModal";
 import Footer from "@/components/layout/Footer";
 import PropertyMap from "@/components/properties/PropertyMap";
+import { ViewRequirementsModal } from "@/components/properties/ViewRequirementsModal";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
@@ -47,6 +51,8 @@ import {
   Layers,
   DollarSign,
   CheckCircle,
+  HandHeart,
+  FileText,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -58,6 +64,10 @@ const PropertyDetail = () => {
   const toggleFavorite = useToggleFavorite();
   const incrementViews = useIncrementViews();
   const { data: userReview } = useUserReview();
+  const { data: profile } = useProfile();
+  const navigate = useNavigate();
+  const createIntention = useCreateIntention();
+  const { data: hasIntention } = useHasIntention(id);
   
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
   const [mainImageLoaded, setMainImageLoaded] = useState(false);
@@ -75,9 +85,11 @@ const PropertyDetail = () => {
   const [tour360Playing, setTour360Playing] = useState(true);
   const [tour360Index, setTour360Index] = useState(0);
   const tour360IntervalRef = useRef<NodeJS.Timeout | null>(null);
+  const [viewRequirementsModalOpen, setViewRequirementsModalOpen] = useState(false);
 
   // Estado para mensaje de interés
   const [interestMessage, setInterestMessage] = useState("");
+  const [isSendingMessage, setIsSendingMessage] = useState(false);
 
   const isFavorite = id ? favoriteIds.includes(id) : false;
 
@@ -153,14 +165,30 @@ const PropertyDetail = () => {
 
   const handleInterestClick = () => {
     if (!user) {
-      window.location.href = "/auth";
+      navigate("/auth?mode=login&redirect=" + encodeURIComponent(window.location.pathname));
       return;
     }
+
+    // Verificar que el usuario no sea el propietario del inmueble
+    if (property && user.id === property.owner_id) {
+      toast({
+        variant: "destructive",
+        title: "No puedes enviarte mensajes",
+        description: "No puedes enviar mensajes sobre tus propias propiedades.",
+      });
+      return;
+    }
+
+    // Mensaje sugerido por defecto
+    if (!interestMessage.trim() && property) {
+      setInterestMessage(`Hola, estoy interesado en la propiedad "${property.title}" ubicada en ${property.city}${property.neighborhood ? `, ${property.neighborhood}` : ""}. Me gustaría conocer más detalles.`);
+    }
+
     setInterestDialogOpen(true);
   };
 
-  const handleSendMessage = () => {
-    if (!interestMessage.trim()) {
+  const handleSendMessage = async () => {
+    if (!user || !property || !interestMessage.trim()) {
       toast({
         variant: "destructive",
         title: "Mensaje requerido",
@@ -169,20 +197,51 @@ const PropertyDetail = () => {
       return;
     }
 
-    // MVP: Solo mostrar confirmación, no guardar en BD aún
-    toast({
-      title: "¡Mensaje enviado!",
-      description: "Tu interés ha sido registrado. El publicador se pondrá en contacto contigo pronto.",
-    });
-    setInterestMessage("");
-    setMessageDialogOpen(false);
-    setInterestDialogOpen(false);
+    // Verificar que el usuario no sea el propietario
+    if (user.id === property.owner_id) {
+      toast({
+        variant: "destructive",
+        title: "No puedes enviarte mensajes",
+        description: "No puedes enviar mensajes sobre tus propias propiedades.",
+      });
+      return;
+    }
 
-    // Mostrar modal de review si el usuario no tiene una review previa
-    if (user && !userReview) {
-      setTimeout(() => {
-        setShowReviewModal(true);
-      }, 1000); // Pequeño delay para que el usuario vea el toast primero
+    setIsSendingMessage(true);
+
+    try {
+      // Crear conversación y enviar mensaje inicial
+      await createConversation({
+        propertyId: property.id,
+        tenantId: user.id,
+        ownerId: property.owner_id,
+        initialMessage: interestMessage.trim(),
+      });
+
+      toast({
+        title: "¡Mensaje enviado!",
+        description: "Tu mensaje ha sido enviado al propietario. Te notificaremos cuando responda.",
+      });
+
+      setInterestMessage("");
+      setMessageDialogOpen(false);
+      setInterestDialogOpen(false);
+
+      // Mostrar modal de review si el usuario no tiene una review previa
+      if (!userReview) {
+        setTimeout(() => {
+          setShowReviewModal(true);
+        }, 1000);
+      }
+    } catch (error: any) {
+      console.error("Error sending message:", error);
+      toast({
+        variant: "destructive",
+        title: "Error al enviar mensaje",
+        description: error.message || "Ocurrió un error al enviar tu mensaje. Por favor intenta de nuevo.",
+      });
+    } finally {
+      setIsSendingMessage(false);
     }
   };
 
@@ -368,17 +427,19 @@ const PropertyDetail = () => {
                 </div>
               )}
 
-              {/* Mapa de Ubicación */}
-              <PropertyMap
-                propertyId={property.id}
-                latitude={property.latitude}
-                longitude={property.longitude}
-                address={property.address}
-                city={property.city}
-                municipio={property.municipio}
-                neighborhood={property.neighborhood}
-                departamento={property.departamento}
-              />
+              {/* Mapa de Ubicación - Ocultar cuando el tour 360 o el modal de requisitos está abierto */}
+              {!tour360DialogOpen && !viewRequirementsModalOpen && (
+                <PropertyMap
+                  propertyId={property.id}
+                  latitude={property.latitude}
+                  longitude={property.longitude}
+                  address={property.address}
+                  city={property.city}
+                  municipio={property.municipio}
+                  neighborhood={property.neighborhood}
+                  departamento={property.departamento}
+                />
+              )}
             </div>
 
             {/* Right: Info */}
@@ -629,31 +690,115 @@ const PropertyDetail = () => {
                 </div>
               )}
 
+              {/* Botón Ver Requisitos */}
+              <div className="pt-4 border-t border-border">
+                <Button
+                  variant="outline"
+                  size="lg"
+                  className="w-full"
+                  onClick={() => setViewRequirementsModalOpen(true)}
+                >
+                  <FileText className="w-5 h-5 mr-2" />
+                  Ver requisitos
+                </Button>
+              </div>
+
               {/* Actions */}
-              <div className="flex flex-col sm:flex-row gap-3 pt-4">
-                <Button
-                  size="lg"
-                  className="flex-1"
-                  onClick={handleInterestClick}
-                >
-                  <MessageCircle className="w-5 h-5 mr-2" />
-                  Estoy interesado
-                </Button>
-                <Button
-                  size="lg"
-                  className="flex-1"
-                  onClick={handleFavoriteClick}
-                  disabled={toggleFavorite.isPending}
-                  variant={isFavorite ? "outline" : "default"}
-                >
-                  <Heart
-                    className={cn(
-                      "w-5 h-5 mr-2",
-                      isFavorite && "fill-current"
+              <div className="flex flex-col gap-3 pt-4">
+                {/* Botón "Quiero este inmueble" - Solo para inquilinos */}
+                {user && property && user.id !== property.owner_id && profile?.role === "tenant" && (
+                  <Button
+                    size="lg"
+                    className="w-full"
+                    onClick={async () => {
+                      if (!user || !property) return;
+                      
+                      if (hasIntention) {
+                        toast({
+                          title: "Ya manifestaste interés",
+                          description: "Ya has manifestado tu interés en este inmueble.",
+                        });
+                        return;
+                      }
+
+                      try {
+                        await createIntention.mutateAsync({
+                          propertyId: property.id,
+                          ownerId: property.owner_id,
+                        });
+                        toast({
+                          title: "¡Interés registrado!",
+                          description: "El propietario ha sido notificado de tu interés.",
+                        });
+                      } catch (error: any) {
+                        toast({
+                          variant: "destructive",
+                          title: "Error",
+                          description: error.message || "No se pudo registrar tu interés.",
+                        });
+                      }
+                    }}
+                    disabled={createIntention.isPending || hasIntention}
+                    variant={hasIntention ? "outline" : "default"}
+                  >
+                    {createIntention.isPending ? (
+                      <>
+                        <Loader2 className="w-5 h-5 mr-2 animate-spin" />
+                        Registrando...
+                      </>
+                    ) : hasIntention ? (
+                      <>
+                        <CheckCircle className="w-5 h-5 mr-2" />
+                        Ya quieres este inmueble
+                      </>
+                    ) : (
+                      <>
+                        <HandHeart className="w-5 h-5 mr-2" />
+                        Quiero este inmueble
+                      </>
                     )}
-                  />
-                  {isFavorite ? "Guardado" : "Favoritos"}
-                </Button>
+                  </Button>
+                )}
+                
+                {/* Botones de mensaje y favoritos */}
+                <div className="flex flex-col sm:flex-row gap-3">
+                  {user && property && user.id !== property.owner_id && (
+                    <Button
+                      size="lg"
+                      className="flex-1"
+                      onClick={handleInterestClick}
+                    >
+                      <MessageCircle className="w-5 h-5 mr-2" />
+                      Enviar mensaje de interés
+                    </Button>
+                  )}
+                  {(!user || (property && user.id === property.owner_id)) && (
+                    <Button
+                      size="lg"
+                      className="flex-1"
+                      onClick={handleInterestClick}
+                      variant={user && property && user.id === property.owner_id ? "outline" : "default"}
+                    >
+                      <MessageCircle className="w-5 h-5 mr-2" />
+                      {user && property && user.id === property.owner_id ? "Ver información" : "Estoy interesado"}
+                    </Button>
+                  )}
+                  <Button
+                    size="lg"
+                    className="flex-1"
+                    onClick={handleFavoriteClick}
+                    disabled={toggleFavorite.isPending}
+                    variant={isFavorite ? "outline" : "default"}
+                  >
+                    <Heart
+                      className={cn(
+                        "w-5 h-5 mr-2",
+                        isFavorite && "fill-current"
+                      )}
+                    />
+                    {isFavorite ? "Guardado" : "Favoritos"}
+                  </Button>
+                </div>
               </div>
 
               {/* Login prompt for non-authenticated users */}
@@ -731,11 +876,25 @@ const PropertyDetail = () => {
             </div>
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setMessageDialogOpen(false)}>
+            <Button 
+              variant="outline" 
+              onClick={() => setMessageDialogOpen(false)}
+              disabled={isSendingMessage}
+            >
               Cancelar
             </Button>
-            <Button onClick={handleSendMessage}>
-              Enviar mensaje
+            <Button 
+              onClick={handleSendMessage}
+              disabled={isSendingMessage || !interestMessage.trim()}
+            >
+              {isSendingMessage ? (
+                <>
+                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                  Enviando...
+                </>
+              ) : (
+                "Enviar mensaje"
+              )}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -830,8 +989,8 @@ const PropertyDetail = () => {
 
       {/* Modal: Tour 360° Fullscreen */}
       <Dialog open={tour360DialogOpen} onOpenChange={setTour360DialogOpen}>
-        <DialogContent className="max-w-[100vw] max-h-[100vh] w-screen h-screen m-0 p-0 rounded-none border-0 bg-black [&>button]:hidden">
-          <div className="relative w-full h-full flex items-center justify-center overflow-hidden">
+        <DialogContent className="max-w-[100vw] max-h-[100vh] w-screen h-screen m-0 p-0 rounded-none border-0 bg-black [&>button]:hidden z-[9999]">
+          <div className="relative w-full h-full flex items-center justify-center overflow-hidden z-[10000]">
             {/* Imagen principal - tamaño mejorado */}
             {images.length > 0 && (
               <img
@@ -944,6 +1103,16 @@ const PropertyDetail = () => {
 
       {/* Modal de Review */}
       {user && <ReviewModal open={showReviewModal} onOpenChange={setShowReviewModal} />}
+
+      {/* Modal Ver Requisitos */}
+      {property && (
+        <ViewRequirementsModal
+          propertyId={property.id}
+          propertyTitle={property.title}
+          open={viewRequirementsModalOpen}
+          onOpenChange={setViewRequirementsModalOpen}
+        />
+      )}
 
       <Footer />
     </div>
