@@ -11,17 +11,20 @@ import {
   DropdownMenuItem,
   DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
-import { useNotifications, useMarkNotificationAsRead, useMarkAllNotificationsAsRead } from "@/hooks/use-notifications";
+import { useNotifications, useMarkNotificationAsRead, useMarkAllNotificationsAsRead, useDeleteAllNotifications } from "@/hooks/use-notifications";
 import { NotificationBell } from "./NotificationBell";
-import { Bell, CheckCircle2, X, CheckCheck } from "lucide-react";
+import { Bell, CheckCircle2, X, CheckCheck, Trash2 } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
 
 export function NotificationsList({ shouldShowBackground = false }: { shouldShowBackground?: boolean }) {
   const [isOpen, setIsOpen] = useState(false);
   const navigate = useNavigate();
+  const { toast } = useToast();
   const { data: notifications = [], isLoading } = useNotifications();
   const markAsRead = useMarkNotificationAsRead();
   const markAllAsRead = useMarkAllNotificationsAsRead();
+  const deleteAll = useDeleteAllNotifications();
 
   const unreadCount = notifications.filter((n) => !n.is_read).length;
 
@@ -45,6 +48,23 @@ export function NotificationsList({ shouldShowBackground = false }: { shouldShow
 
   const handleMarkAllAsRead = () => {
     markAllAsRead.mutate();
+  };
+
+  const handleDeleteAll = async () => {
+    try {
+      await deleteAll.mutateAsync();
+      toast({
+        title: "Notificaciones eliminadas",
+        description: "Todas las notificaciones han sido eliminadas correctamente.",
+      });
+      setIsOpen(false);
+    } catch (error: any) {
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: error.message || "No se pudieron eliminar las notificaciones.",
+      });
+    }
   };
 
   return (
@@ -121,13 +141,12 @@ export function NotificationsList({ shouldShowBackground = false }: { shouldShow
               <Button
                 variant="ghost"
                 size="sm"
-                className="w-full text-xs"
-                onClick={() => {
-                  navigate("/intenciones");
-                  setIsOpen(false);
-                }}
+                className="w-full text-xs text-destructive hover:text-destructive hover:bg-destructive/10"
+                onClick={handleDeleteAll}
+                disabled={deleteAll.isPending}
               >
-                Ver todas las notificaciones
+                <Trash2 className="h-3 w-3 mr-1" />
+                {deleteAll.isPending ? "Eliminando..." : "Borrar todas las notificaciones"}
               </Button>
             </div>
           </>

@@ -54,6 +54,7 @@ const PropertyIntentions = () => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["intentions"] });
+      queryClient.invalidateQueries({ queryKey: ["has-intention"] }); // Invalidar verificación de intención para que el botón se actualice
       toast({
         title: "Estado actualizado",
         description: "El estado de la intención ha sido actualizado.",

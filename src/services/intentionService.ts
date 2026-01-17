@@ -35,26 +35,131 @@ export async function createPropertyIntention(
 ): Promise<PropertyIntention> {
   const { propertyId, tenantId, ownerId } = params;
 
-  // Verificar que no exista ya una intención para este inquilino e inmueble
+  // Verificar si existe alguna intención (activa o cerrada) para este inquilino e inmueble
+  // Debido al constraint unique(tenant_id, property_id), solo puede haber una intención
   const { data: existing } = await supabase
     .from("property_intentions")
-    .select("id")
+    .select("id, status")
     .eq("property_id", propertyId)
     .eq("tenant_id", tenantId)
-    .single();
+    .maybeSingle();
 
   if (existing) {
-    // Si ya existe, retornar la existente
-    const { data: intention } = await supabase
-      .from("property_intentions")
-      .select("*")
-      .eq("id", existing.id)
-      .single();
+    // Si existe una intención activa, retornar la existente
+    if (existing.status !== "closed") {
+      const { data: intention } = await supabase
+        .from("property_intentions")
+        .select("*")
+        .eq("id", existing.id)
+        .maybeSingle();
 
-    return intention as PropertyIntention;
+      if (intention) {
+        console.log("Intención activa existente encontrada, no se crea duplicado");
+        return intention as PropertyIntention;
+      }
+    } else {
+      // Si la intención está cerrada, reactivarla y crear notificación
+      console.log("Intención cerrada encontrada, reactivándola...", { 
+        intentionId: existing.id, 
+        tenantId, 
+        propertyId 
+      });
+      
+      const { data: reactivatedIntention, error: updateError } = await supabase
+        .from("property_intentions")
+        .update({ status: "pending" })
+        .eq("id", existing.id)
+        .eq("tenant_id", tenantId) // Agregar esta condición para asegurar que es el inquilino correcto
+        .select()
+        .maybeSingle();
+
+      if (updateError) {
+        console.error("Error reactivating intention:", updateError);
+        // Si el error es de permisos RLS, intentar crear una nueva intención eliminando la cerrada primero
+        if (updateError.code === "42501" || updateError.message?.includes("permission") || updateError.message?.includes("policy")) {
+          console.log("Error de permisos detectado, intentando eliminar y recrear la intención...");
+          // Eliminar la intención cerrada
+          const { error: deleteError } = await supabase
+            .from("property_intentions")
+            .delete()
+            .eq("id", existing.id)
+            .eq("tenant_id", tenantId);
+          
+          if (deleteError) {
+            console.error("Error eliminando intención cerrada:", deleteError);
+            throw new Error(`Error al reactivar la intención: ${updateError.message}`);
+          }
+          
+          // Crear nueva intención (esto activará el trigger de notificación)
+          const { data: newIntention, error: insertError } = await supabase
+            .from("property_intentions")
+            .insert({
+              property_id: propertyId,
+              tenant_id: tenantId,
+              owner_id: ownerId,
+              status: "pending",
+            })
+            .select()
+            .single();
+          
+          if (insertError) {
+            console.error("Error creando nueva intención después de eliminar cerrada:", insertError);
+            throw new Error(`Error al crear la intención: ${insertError.message}`);
+          }
+          
+          return newIntention as PropertyIntention;
+        }
+        throw new Error(`Error al reactivar la intención: ${updateError.message}`);
+      }
+
+      if (!reactivatedIntention) {
+        console.error("No se pudo reactivar la intención - resultado null", { existing });
+        throw new Error("No se pudo reactivar la intención. Por favor, intenta nuevamente.");
+      }
+      
+      console.log("Intención reactivada exitosamente:", reactivatedIntention);
+
+      // Crear notificación manualmente ya que el trigger solo se ejecuta en INSERT
+      try {
+        const { data: propertyData, error: propError } = await supabase
+          .from("properties")
+          .select("title")
+          .eq("id", propertyId)
+          .maybeSingle();
+
+        const { data: tenantData, error: tenantError } = await supabase
+          .from("profiles")
+          .select("full_name, email")
+          .eq("id", tenantId)
+          .maybeSingle();
+
+        const tenantName = tenantData?.full_name || tenantData?.email || "Un inquilino";
+        const propertyTitle = propertyData?.title || "Sin título";
+
+        const { error: notifError } = await supabase.rpc("create_notification", {
+          p_user_id: ownerId,
+          p_type: "property_intention",
+          p_title: "Nueva intención de arrendamiento",
+          p_message: `El inquilino ${tenantName} quiere arrendar tu inmueble: ${propertyTitle}`,
+          p_related_id: propertyId,
+        });
+
+        if (notifError) {
+          console.warn("Error creando notificación manual:", notifError);
+        } else {
+          console.log("Notificación creada manualmente para intención reactivada");
+        }
+      } catch (notifError) {
+        console.warn("Error creando notificación manual:", notifError);
+        // No fallar si la notificación no se puede crear
+      }
+
+      return reactivatedIntention as PropertyIntention;
+    }
   }
 
-  // Crear nueva intención
+  // Crear nueva intención (esto activará el trigger de notificación)
+  console.log("Creando nueva intención, esto debería activar el trigger de notificación");
   const { data, error } = await supabase
     .from("property_intentions")
     .insert({
@@ -71,6 +176,7 @@ export async function createPropertyIntention(
     throw new Error(`Error al crear la intención: ${error.message}`);
   }
 
+  console.log("Intención creada exitosamente:", data);
   return data as PropertyIntention;
 }
 
@@ -81,6 +187,8 @@ export async function getOwnerIntentions(
   ownerId: string
 ): Promise<PropertyIntentionWithDetails[]> {
   try {
+    // Obtener TODAS las intenciones del propietario, incluyendo cerradas
+    // Varios inquilinos pueden tener intención de arrendar el mismo inmueble
     const { data, error } = await supabase
       .from("property_intentions")
       .select(`
@@ -208,7 +316,9 @@ export async function updateIntentionStatus(
 }
 
 /**
- * Verifica si un inquilino ya manifestó intención sobre un inmueble
+ * Verifica si un inquilino ya manifestó intención activa sobre un inmueble
+ * Solo considera intenciones activas (pending, viewed, contacted)
+ * NO considera intenciones cerradas (closed) para permitir volver a manifestar interés
  */
 export async function hasIntentionForProperty(
   propertyId: string,
@@ -216,16 +326,17 @@ export async function hasIntentionForProperty(
 ): Promise<boolean> {
   const { data, error } = await supabase
     .from("property_intentions")
-    .select("id")
+    .select("id, status")
     .eq("property_id", propertyId)
     .eq("tenant_id", tenantId)
-    .single();
+    .in("status", ["pending", "viewed", "contacted"]) // Solo considerar estados activos, no "closed"
+    .maybeSingle(); // Usar maybeSingle para manejar mejor cuando no hay resultados
 
-  if (error && error.code !== "PGRST116") {
-    // PGRST116 = no rows returned
+  if (error) {
     console.error("Error checking intention:", error);
     return false;
   }
 
-  return !!data;
+  // Si existe una intención activa (no cerrada), retornar true
+  return !!data && data.status !== "closed";
 }

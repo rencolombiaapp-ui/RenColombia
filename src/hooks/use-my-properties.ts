@@ -3,6 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
 import { useToast } from "@/hooks/use-toast";
 import type { PropertyWithImages } from "@/integrations/supabase/types";
+import { useEffect } from "react";
 
 // Tipo extendido con conteo de favoritos
 export type PropertyWithStats = PropertyWithImages & {
@@ -12,8 +13,9 @@ export type PropertyWithStats = PropertyWithImages & {
 // Hook para obtener las propiedades del usuario actual con estadísticas
 export function useMyProperties() {
   const { user } = useAuth();
+  const queryClient = useQueryClient();
 
-  return useQuery({
+  const query = useQuery({
     queryKey: ["my-properties", user?.id],
     queryFn: async () => {
       if (!user) return [];
@@ -39,32 +41,117 @@ export function useMyProperties() {
 
       // Obtener conteo de favoritos para cada propiedad
       const propertyIds = properties.map((p) => p.id);
-      const { data: favoritesData, error: favError } = await supabase
-        .from("favorites")
-        .select("property_id")
-        .in("property_id", propertyIds);
+      
+      // Crear un mapa de property_id -> favorites_count (inicializar en 0 para todas las propiedades)
+      const favoritesCount: Record<string, number> = {};
+      propertyIds.forEach((id) => {
+        favoritesCount[id] = 0;
+      });
+      
+      // Intentar usar función RPC primero (más eficiente)
+      try {
+        const { data: favoritesCountData, error: favError } = await supabase.rpc(
+          "get_favorites_count_by_properties",
+          {
+            property_ids: propertyIds,
+          }
+        );
 
-      if (favError) {
-        console.error("Error fetching favorites count:", favError);
+        if (!favError && favoritesCountData && Array.isArray(favoritesCountData)) {
+          // Usar los datos de la función RPC
+          favoritesCountData.forEach((item: { property_id: string; favorites_count: number }) => {
+            if (item.property_id && item.favorites_count !== undefined) {
+              favoritesCount[item.property_id] = item.favorites_count;
+            }
+          });
+          console.log("Favorites count from RPC:", favoritesCount);
+        } else {
+          // Fallback: usar query directa si la función RPC no está disponible o falla
+          throw new Error(favError?.message || "RPC function not available");
+        }
+      } catch (error) {
+        // Fallback: usar query directa para contar favoritos
+        console.warn("Using direct query for favorites count:", error);
+        const { data: favoritesData, error: favError } = await supabase
+          .from("favorites")
+          .select("property_id")
+          .in("property_id", propertyIds);
+
+        if (favError) {
+          console.error("Error fetching favorites count:", favError);
+        } else if (favoritesData && favoritesData.length > 0) {
+          // Contar favoritos por propiedad manualmente
+          favoritesData.forEach((fav) => {
+            if (fav.property_id) {
+              favoritesCount[fav.property_id] = (favoritesCount[fav.property_id] || 0) + 1;
+            }
+          });
+          console.log("Favorites count from direct query:", favoritesCount);
+        }
       }
 
-      // Contar favoritos por propiedad
-      const favoritesCount: Record<string, number> = {};
-      favoritesData?.forEach((fav) => {
-        favoritesCount[fav.property_id] = (favoritesCount[fav.property_id] || 0) + 1;
-      });
-
-      // Combinar datos
+      // Combinar datos - asegurar que todas las propiedades tengan favorites_count (0 si no hay favoritos)
       const propertiesWithStats: PropertyWithStats[] = properties.map((property) => ({
         ...property,
         property_images: property.property_images || [],
-        favorites_count: favoritesCount[property.id] || 0,
+        favorites_count: favoritesCount[property.id] || 0, // 0 si no hay favoritos
       }));
 
       return propertiesWithStats;
     },
     enabled: !!user,
+    staleTime: 0, // No cachear, siempre obtener datos frescos
+    refetchOnWindowFocus: true, // Refetch cuando la ventana recupera el foco
   });
+
+  // Escuchar cambios en la tabla favorites usando Supabase Realtime
+  useEffect(() => {
+    if (!user || !query.data) return;
+
+    let channel: ReturnType<typeof supabase.channel> | null = null;
+
+    // Obtener los IDs de las propiedades del usuario desde los datos de la query
+    const propertyIds = query.data.map((p) => p.id);
+    if (propertyIds.length === 0) return;
+
+    // Suscribirse a cambios en la tabla favorites
+    channel = supabase
+      .channel(`favorites-changes-${user.id}`)
+      .on(
+        "postgres_changes",
+        {
+          event: "*", // INSERT, UPDATE, DELETE
+          schema: "public",
+          table: "favorites",
+        },
+        async (payload) => {
+          // Verificar si el cambio afecta alguna de nuestras propiedades
+          const changedPropertyId =
+            (payload.new as any)?.property_id || (payload.old as any)?.property_id;
+
+          if (changedPropertyId && propertyIds.includes(changedPropertyId)) {
+            // Invalidar y refetch la query para actualizar los contadores individuales
+            queryClient.invalidateQueries({ queryKey: ["my-properties", user.id] });
+            await queryClient.refetchQueries({ queryKey: ["my-properties", user.id] });
+          }
+        }
+      )
+      .subscribe();
+
+    // Manejar errores de suscripción
+    channel.on("error", (error) => {
+      console.error("Realtime subscription error:", error);
+    });
+
+    // Cleanup: remover suscripción al desmontar o cuando cambien las propiedades
+    return () => {
+      if (channel) {
+        supabase.removeChannel(channel);
+      }
+    };
+  }, [user, queryClient, query.data]); // Agregar query.data como dependencia para re-suscribirse cuando cambien las propiedades
+
+  return query;
 }
 
 // Hook para pausar/reactivar una propiedad

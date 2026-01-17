@@ -67,7 +67,16 @@ const PropertyDetail = () => {
   const { data: profile } = useProfile();
   const navigate = useNavigate();
   const createIntention = useCreateIntention();
-  const { data: hasIntention } = useHasIntention(id);
+  const { data: hasIntention, refetch: refetchHasIntention } = useHasIntention(id);
+  // Estado local para bloquear el botón inmediatamente después de hacer clic
+  const [intentionSubmitted, setIntentionSubmitted] = useState(false);
+
+  // Sincronizar el estado local con la query cuando cambia
+  useEffect(() => {
+    if (hasIntention) {
+      setIntentionSubmitted(true);
+    }
+  }, [hasIntention]);
   
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
   const [mainImageLoaded, setMainImageLoaded] = useState(false);
@@ -427,8 +436,8 @@ const PropertyDetail = () => {
                 </div>
               )}
 
-              {/* Mapa de Ubicación - Ocultar cuando el tour 360 o el modal de requisitos está abierto */}
-              {!tour360DialogOpen && !viewRequirementsModalOpen && (
+              {/* Mapa de Ubicación - Ocultar cuando cualquier modal está abierto */}
+              {!tour360DialogOpen && !viewRequirementsModalOpen && !contactDialogOpen && !messageDialogOpen && !interestDialogOpen && !showReviewModal && (
                 <PropertyMap
                   propertyId={property.id}
                   latitude={property.latitude}
@@ -713,7 +722,7 @@ const PropertyDetail = () => {
                     onClick={async () => {
                       if (!user || !property) return;
                       
-                      if (hasIntention) {
+                      if (hasIntention || intentionSubmitted) {
                         toast({
                           title: "Ya manifestaste interés",
                           description: "Ya has manifestado tu interés en este inmueble.",
@@ -721,16 +730,23 @@ const PropertyDetail = () => {
                         return;
                       }
 
+                      // Bloquear el botón inmediatamente
+                      setIntentionSubmitted(true);
+
                       try {
                         await createIntention.mutateAsync({
                           propertyId: property.id,
                           ownerId: property.owner_id,
                         });
+                        // Refrescar la verificación de intención inmediatamente
+                        await refetchHasIntention();
                         toast({
                           title: "¡Interés registrado!",
                           description: "El propietario ha sido notificado de tu interés.",
                         });
                       } catch (error: any) {
+                        // Si hay error, permitir intentar de nuevo
+                        setIntentionSubmitted(false);
                         toast({
                           variant: "destructive",
                           title: "Error",
@@ -738,15 +754,15 @@ const PropertyDetail = () => {
                         });
                       }
                     }}
-                    disabled={createIntention.isPending || hasIntention}
-                    variant={hasIntention ? "outline" : "default"}
+                    disabled={createIntention.isPending || !!hasIntention || intentionSubmitted}
+                    variant={hasIntention || intentionSubmitted ? "outline" : "default"}
                   >
                     {createIntention.isPending ? (
                       <>
                         <Loader2 className="w-5 h-5 mr-2 animate-spin" />
                         Registrando...
                       </>
-                    ) : hasIntention ? (
+                    ) : hasIntention || intentionSubmitted ? (
                       <>
                         <CheckCircle className="w-5 h-5 mr-2" />
                         Ya quieres este inmueble
@@ -817,7 +833,7 @@ const PropertyDetail = () => {
 
       {/* Modal: Estoy Interesado */}
       <Dialog open={interestDialogOpen} onOpenChange={setInterestDialogOpen}>
-        <DialogContent>
+        <DialogContent className="z-[1000]">
           <DialogHeader>
             <DialogTitle>Estoy interesado</DialogTitle>
             <DialogDescription>
@@ -856,7 +872,7 @@ const PropertyDetail = () => {
 
       {/* Modal: Enviar Mensaje */}
       <Dialog open={messageDialogOpen} onOpenChange={setMessageDialogOpen}>
-        <DialogContent>
+        <DialogContent className="z-[1000]">
           <DialogHeader>
             <DialogTitle>Enviar mensaje de interés</DialogTitle>
             <DialogDescription>
@@ -902,7 +918,7 @@ const PropertyDetail = () => {
 
       {/* Modal: Información de Contacto */}
       <Dialog open={contactDialogOpen} onOpenChange={setContactDialogOpen}>
-        <DialogContent>
+        <DialogContent className="z-[1000]">
           <DialogHeader>
             <DialogTitle>Información de contacto</DialogTitle>
             <DialogDescription>

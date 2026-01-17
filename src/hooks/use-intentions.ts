@@ -31,9 +31,19 @@ export function useCreateIntention() {
         ownerId,
       });
     },
-    onSuccess: () => {
+    onSuccess: async (data, variables) => {
+      // Invalidar todas las queries relacionadas
       queryClient.invalidateQueries({ queryKey: ["intentions"] });
+      // Invalidar específicamente la query de has-intention para esta propiedad
+      queryClient.invalidateQueries({ queryKey: ["has-intention", variables.propertyId] });
+      queryClient.invalidateQueries({ queryKey: ["has-intention"] }); // También invalidar todas las verificaciones
       queryClient.invalidateQueries({ queryKey: ["notifications"] });
+      // Forzar refetch inmediato para actualizar la UI
+      await Promise.all([
+        queryClient.refetchQueries({ queryKey: ["intentions", "owner"] }),
+        queryClient.refetchQueries({ queryKey: ["has-intention", variables.propertyId] }),
+        queryClient.refetchQueries({ queryKey: ["notifications"] }),
+      ]);
     },
   });
 }
@@ -48,7 +58,8 @@ export function useOwnerIntentions() {
     queryKey: ["intentions", "owner", user?.id],
     queryFn: () => getOwnerIntentions(user!.id),
     enabled: !!user,
-    refetchInterval: 30000, // Refrescar cada 30 segundos
+    refetchInterval: 10000, // Refrescar cada 10 segundos para ver nuevas intenciones más rápido
+    staleTime: 0, // No cachear, siempre obtener datos frescos
   });
 }
 

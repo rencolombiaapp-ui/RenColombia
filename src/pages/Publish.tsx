@@ -12,6 +12,14 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import {
   Home,
   ArrowLeft,
   Building2,
@@ -25,6 +33,8 @@ import {
   Star,
   Car,
   Layers,
+  Upload,
+  Image as ImageIcon,
 } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -60,7 +70,7 @@ const PROPERTY_FEATURES = [
   "Zona infantil",
 ] as const;
 import { useAuth } from "@/lib/auth";
-import { useProfile } from "@/hooks/use-profile";
+import { useProfile, useUpdateProfile } from "@/hooks/use-profile";
 import { useMyProperties } from "@/hooks/use-my-properties";
 import { useToast } from "@/hooks/use-toast";
 import { useUserReview } from "@/hooks/use-reviews";
@@ -84,6 +94,7 @@ type UploadedImage = {
 const Publish = () => {
   const { user } = useAuth();
   const { data: profile } = useProfile();
+  const updateProfile = useUpdateProfile();
   const { data: myProperties = [] } = useMyProperties();
   const { data: userReview } = useUserReview();
   const { toast } = useToast();
@@ -94,6 +105,7 @@ const Publish = () => {
   const isEditMode = !!editId;
   const { data: propertyData, isLoading: isLoadingProperty } = useProperty(editId || undefined);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const companyLogoInputRef = useRef<HTMLInputElement>(null);
 
   const isInmobiliaria = profile?.publisher_type === "inmobiliaria";
   const publishedPropertiesCount = Array.isArray(myProperties) ? myProperties.filter((p) => p.status === "published").length : 0;
@@ -103,6 +115,13 @@ const Publish = () => {
   const [uploadedImages, setUploadedImages] = useState<UploadedImage[]>([]);
   const [isUploading, setIsUploading] = useState(false);
   const [showReviewModal, setShowReviewModal] = useState(false);
+  
+  // Estados para el modal de tipo de publicador
+  const [showPublisherTypeModal, setShowPublisherTypeModal] = useState(false);
+  const [publisherType, setPublisherType] = useState<"select" | "individual" | "inmobiliaria">("select");
+  const [companyName, setCompanyName] = useState("");
+  const [companyLogoFile, setCompanyLogoFile] = useState<File | null>(null);
+  const [companyLogoPreview, setCompanyLogoPreview] = useState<string>("");
 
   const [formData, setFormData] = useState({
     title: "",
@@ -163,6 +182,22 @@ const Publish = () => {
       setFormData((prev) => ({ ...prev, city: formData.municipio }));
     }
   }, [formData.municipio]);
+
+  // Verificar si debe mostrar el modal de tipo de publicador
+  useEffect(() => {
+    if (profile && !isEditMode) {
+      // Solo mostrar si publisher_type es NULL o "select"
+      const needsPublisherType = !profile.publisher_type || profile.publisher_type === "select";
+      setShowPublisherTypeModal(needsPublisherType);
+      
+      // Cargar datos del perfil si existen
+      if (profile.publisher_type) {
+        setPublisherType(profile.publisher_type as "individual" | "inmobiliaria");
+        setCompanyName(profile.company_name || "");
+        setCompanyLogoPreview(profile.company_logo || "");
+      }
+    }
+  }, [profile, isEditMode]);
 
   // Limpiar formulario cuando se sale del modo edición
   useEffect(() => {
@@ -320,6 +355,90 @@ const Publish = () => {
         isPrimary: i === index,
       }))
     );
+  };
+
+  // Manejar selección de logo de inmobiliaria
+  const handleCompanyLogoSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (!file.type.startsWith("image/")) {
+      toast({
+        variant: "destructive",
+        title: "Archivo no válido",
+        description: "El archivo debe ser una imagen.",
+      });
+      return;
+    }
+
+    if (file.size > 5 * 1024 * 1024) {
+      toast({
+        variant: "destructive",
+        title: "Archivo muy grande",
+        description: "El archivo supera el límite de 5MB.",
+      });
+      return;
+    }
+
+    setCompanyLogoFile(file);
+    const preview = URL.createObjectURL(file);
+    setCompanyLogoPreview(preview);
+  };
+
+  // Eliminar logo seleccionado
+  const removeCompanyLogo = () => {
+    setCompanyLogoFile(null);
+    setCompanyLogoPreview("");
+    if (companyLogoInputRef.current) {
+      companyLogoInputRef.current.value = "";
+    }
+  };
+
+  // Guardar tipo de publicador
+  const handleSavePublisherType = async () => {
+    if (publisherType === "select") {
+      toast({
+        variant: "destructive",
+        title: "Selección requerida",
+        description: "Debes seleccionar un tipo de publicador antes de continuar.",
+      });
+      return;
+    }
+
+    if (publisherType === "inmobiliaria" && !companyName.trim()) {
+      toast({
+        variant: "destructive",
+        title: "Nombre requerido",
+        description: "El nombre de la inmobiliaria es obligatorio.",
+      });
+      return;
+    }
+
+    const userRole = publisherType === "select" ? "tenant" : "landlord";
+    const finalPublisherType = publisherType === "select" ? null : publisherType;
+
+    try {
+      await updateProfile.mutateAsync({
+        role: userRole,
+        publisher_type: finalPublisherType === "select" ? null : finalPublisherType,
+        company_name: publisherType === "inmobiliaria" ? companyName.trim() : null,
+        company_logo: publisherType === "inmobiliaria" 
+          ? (companyLogoFile || (companyLogoPreview || null))
+          : null,
+      });
+
+      setShowPublisherTypeModal(false);
+      toast({
+        title: "Perfil actualizado",
+        description: "Ahora puedes publicar tu inmueble.",
+      });
+    } catch (error: any) {
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: error.message || "No se pudo guardar el tipo de publicador.",
+      });
+    }
   };
 
   const uploadImagesToStorage = async (propertyId: string): Promise<string[]> => {
@@ -1168,6 +1287,167 @@ const Publish = () => {
 
       {/* Modal de Review */}
       {user && <ReviewModal open={showReviewModal} onOpenChange={setShowReviewModal} />}
+
+      {/* Modal obligatorio de tipo de publicador */}
+      <Dialog open={showPublisherTypeModal} onOpenChange={() => {}}>
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Antes de publicar</DialogTitle>
+            <DialogDescription>
+              Selecciona cómo quieres aparecer como publicador de inmuebles.
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-6 py-4">
+            {/* Tipo de publicador */}
+            <div className="space-y-2">
+              <Label htmlFor="publisherType">Tipo de publicador *</Label>
+              <Select
+                value={publisherType}
+                onValueChange={(value) => {
+                  setPublisherType(value as "select" | "individual" | "inmobiliaria");
+                  if (value === "individual") {
+                    setCompanyName("");
+                    setCompanyLogoFile(null);
+                    setCompanyLogoPreview("");
+                  }
+                }}
+              >
+                <SelectTrigger className="h-12">
+                  <SelectValue placeholder="Seleccionar" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="select">Seleccionar</SelectItem>
+                  <SelectItem value="individual">Particular</SelectItem>
+                  <SelectItem value="inmobiliaria">Inmobiliaria</SelectItem>
+                </SelectContent>
+              </Select>
+              <p className="text-xs text-muted-foreground">
+                {publisherType === "select"
+                  ? "Selecciona cómo quieres aparecer como publicador"
+                  : publisherType === "individual"
+                  ? "Tus inmuebles aparecerán publicados por ti como particular."
+                  : "Tus inmuebles aparecerán bajo el nombre de tu inmobiliaria."}
+              </p>
+            </div>
+
+            {/* Campos de inmobiliaria */}
+            {publisherType === "inmobiliaria" && (
+              <>
+                {/* Nombre comercial */}
+                <div className="space-y-2">
+                  <Label htmlFor="companyName">
+                    Nombre comercial de la inmobiliaria *
+                  </Label>
+                  <div className="relative">
+                    <Building2 className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
+                    <Input
+                      id="companyName"
+                      type="text"
+                      placeholder="Ej: Inmobiliaria XYZ"
+                      value={companyName}
+                      onChange={(e) => setCompanyName(e.target.value)}
+                      className="pl-10 h-12"
+                      required
+                    />
+                  </div>
+                </div>
+
+                {/* Logo */}
+                <div className="space-y-2">
+                  <Label htmlFor="companyLogo">Logo</Label>
+                  
+                  {/* Preview del logo */}
+                  {companyLogoPreview && (
+                    <div className="relative border border-border rounded-lg p-4 bg-muted/50">
+                      <img
+                        src={companyLogoPreview}
+                        alt="Logo preview"
+                        className="max-h-32 max-w-full object-contain mx-auto"
+                        onError={(e) => {
+                          (e.target as HTMLImageElement).style.display = "none";
+                        }}
+                      />
+                      <button
+                        type="button"
+                        onClick={removeCompanyLogo}
+                        className="absolute top-2 right-2 w-8 h-8 rounded-full bg-destructive text-destructive-foreground flex items-center justify-center hover:bg-destructive/90 transition-colors"
+                      >
+                        <X className="w-4 h-4" />
+                      </button>
+                    </div>
+                  )}
+
+                  {/* Upload Button */}
+                  {!companyLogoPreview && (
+                    <div
+                      onClick={() => companyLogoInputRef.current?.click()}
+                      className="border-2 border-dashed border-border rounded-lg p-6 text-center hover:border-primary hover:bg-primary/5 transition-colors cursor-pointer"
+                    >
+                      <input
+                        ref={companyLogoInputRef}
+                        type="file"
+                        accept="image/*"
+                        onChange={handleCompanyLogoSelect}
+                        className="hidden"
+                      />
+                      <ImageIcon className="w-10 h-10 text-muted-foreground mx-auto mb-3" />
+                      <p className="text-sm font-medium text-foreground mb-1">
+                        Haz clic para subir logo
+                      </p>
+                      <p className="text-xs text-muted-foreground">
+                        PNG, JPG hasta 5MB
+                      </p>
+                    </div>
+                  )}
+
+                  {/* Cambiar logo si ya hay uno */}
+                  {companyLogoPreview && (
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={() => companyLogoInputRef.current?.click()}
+                      className="w-full"
+                    >
+                      <Upload className="w-4 h-4 mr-2" />
+                      Cambiar logo
+                    </Button>
+                  )}
+
+                  <input
+                    ref={companyLogoInputRef}
+                    type="file"
+                    accept="image/*"
+                    onChange={handleCompanyLogoSelect}
+                    className="hidden"
+                  />
+                  <p className="text-xs text-muted-foreground">
+                    Logo de tu inmobiliaria (opcional)
+                  </p>
+                </div>
+              </>
+            )}
+          </div>
+
+          <DialogFooter>
+            <Button
+              type="button"
+              onClick={handleSavePublisherType}
+              disabled={updateProfile.isPending || publisherType === "select" || (publisherType === "inmobiliaria" && !companyName.trim())}
+              className="w-full"
+            >
+              {updateProfile.isPending ? (
+                <>
+                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                  Guardando...
+                </>
+              ) : (
+                "Continuar"
+              )}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       <Footer />
     </div>

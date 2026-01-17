@@ -6,6 +6,7 @@ import {
   markNotificationAsRead,
   markAllNotificationsAsRead,
   deleteNotification,
+  deleteAllNotifications,
   type Notification,
 } from "@/services/notificationService";
 
@@ -95,6 +96,26 @@ export function useDeleteNotification() {
 
   return useMutation({
     mutationFn: (notificationId: string) => deleteNotification(notificationId),
+    onSuccess: () => {
+      // Invalidar queries relacionadas
+      queryClient.invalidateQueries({ queryKey: ["notifications", user?.id] });
+      queryClient.invalidateQueries({ queryKey: ["unread-notification-count", user?.id] });
+    },
+  });
+}
+
+/**
+ * Hook para eliminar todas las notificaciones del usuario
+ */
+export function useDeleteAllNotifications() {
+  const queryClient = useQueryClient();
+  const { user } = useAuth();
+
+  return useMutation({
+    mutationFn: () => {
+      if (!user) throw new Error("User not authenticated");
+      return deleteAllNotifications(user.id);
+    },
     onSuccess: () => {
       // Invalidar queries relacionadas
       queryClient.invalidateQueries({ queryKey: ["notifications", user?.id] });

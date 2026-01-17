@@ -126,6 +126,28 @@ export async function deleteNotification(notificationId: string): Promise<boolea
 }
 
 /**
+ * Eliminar todas las notificaciones del usuario
+ */
+export async function deleteAllNotifications(userId: string): Promise<boolean> {
+  try {
+    const { error } = await supabase
+      .from("notifications")
+      .delete()
+      .eq("user_id", userId);
+
+    if (error) {
+      console.error("Error deleting all notifications:", error);
+      return false;
+    }
+
+    return true;
+  } catch (error) {
+    console.error("Error in deleteAllNotifications:", error);
+    return false;
+  }
+}
+
+/**
  * Crear notificación (usar con precaución, normalmente se hace desde triggers)
  */
 export async function createNotification(

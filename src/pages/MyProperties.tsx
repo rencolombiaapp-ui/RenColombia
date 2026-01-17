@@ -35,6 +35,7 @@ import {
 import { useAuth } from "@/lib/auth";
 import { useProfile } from "@/hooks/use-profile";
 import { useMyProperties, useTogglePropertyStatus, useDeleteProperty, type PropertyWithStats } from "@/hooks/use-my-properties";
+import { useTotalFavorites } from "@/hooks/use-total-favorites";
 import { RentalRequirementsModal } from "@/components/properties/RentalRequirementsModal";
 import { cn } from "@/lib/utils";
 
@@ -66,7 +67,8 @@ const MyProperties = () => {
   // Estadísticas totales
   const totalPublished = properties.filter((p) => p.status === "published").length;
   const totalViews = properties.reduce((sum, p) => sum + (p.views_count || 0), 0);
-  const totalFavorites = properties.reduce((sum, p) => sum + p.favorites_count, 0);
+  // Usar el hook dedicado para obtener el total de favoritos (se actualiza en tiempo real)
+  const totalFavorites = useTotalFavorites();
 
   // Obtener imagen principal
   const getPrimaryImage = (property: PropertyWithStats) => {
