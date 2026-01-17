@@ -129,6 +129,18 @@ create policy "Propietarios pueden actualizar intenciones"
   using (auth.uid() = owner_id)
   with check (auth.uid() = owner_id);
 
+-- Policy: Los inquilinos pueden reactivar sus intenciones cerradas
+create policy "Inquilinos pueden reactivar intenciones cerradas"
+  on public.property_intentions for update
+  using (
+    auth.uid() = tenant_id 
+    and status = 'closed'
+  )
+  with check (
+    auth.uid() = tenant_id 
+    and status = 'pending'
+  );
+
 
 -- ============================================
 -- FUNCIONES AUXILIARES

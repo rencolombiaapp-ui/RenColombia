@@ -119,6 +119,7 @@ returns trigger as $$
 declare
   v_property_title text;
   v_tenant_name text;
+  v_notification_id uuid;
 begin
   -- Obtener título de la propiedad
   select title into v_property_title
@@ -130,14 +131,28 @@ begin
   from public.profiles
   where id = new.tenant_id;
   
+  -- Verificar que tenemos los datos necesarios antes de crear la notificación
+  if new.owner_id is null then
+    raise warning 'owner_id es null, no se puede crear notificación';
+    return new;
+  end if;
+  
   -- Crear notificación para el propietario
-  perform public.create_notification(
-    new.owner_id,
-    'property_intention',
-    'Nueva intención de arrendamiento',
-    format('El inquilino %s quiere arrendar tu inmueble: %s', v_tenant_name, coalesce(v_property_title, 'Sin título')),
-    new.property_id
-  );
+  begin
+    v_notification_id := public.create_notification(
+      new.owner_id,
+      'property_intention',
+      'Nueva intención de arrendamiento',
+      format('El inquilino %s quiere arrendar tu inmueble: %s', coalesce(v_tenant_name, 'Un inquilino'), coalesce(v_property_title, 'Sin título')),
+      new.property_id
+    );
+    
+    -- Log para debugging (solo en desarrollo)
+    raise notice 'Notificación creada exitosamente: %', v_notification_id;
+  exception when others then
+    -- Si hay un error al crear la notificación, registrar pero no fallar el trigger
+    raise warning 'Error al crear notificación: %', sqlerrm;
+  end;
   
   return new;
 end;
