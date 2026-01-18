@@ -29,6 +29,8 @@ import Help from "./pages/Help";
 import ReportProblem from "./pages/ReportProblem";
 import Insurance from "./pages/Insurance";
 import PropertyIntentions from "./pages/PropertyIntentions";
+import Contracts from "./pages/Contracts";
+import ContractDetail from "./pages/ContractDetail";
 import NotFound from "./pages/NotFound";
 import ChatbotButton from "./components/chatbot/ChatbotButton";
 import ErrorBoundary from "./components/ErrorBoundary";
@@ -123,16 +125,32 @@ const App = () => (
                 </ProtectedRoute>
               }
             />
-            <Route
-              path="/intenciones"
-              element={
-                <ProtectedRoute>
-                  <PropertyIntentions />
-                </ProtectedRoute>
-              }
-            />
-          {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-          <Route path="*" element={<NotFound />} />
+                <Route
+                  path="/intenciones"
+                  element={
+                    <ProtectedRoute>
+                      <PropertyIntentions />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/contratos"
+                  element={
+                    <ProtectedRoute>
+                      <Contracts />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/contratos/:id"
+                  element={
+                    <ProtectedRoute>
+                      <ContractDetail />
+                    </ProtectedRoute>
+                  }
+                />
+              {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+              <Route path="*" element={<NotFound />} />
         </Routes>
         <ChatbotButton />
       </BrowserRouter>

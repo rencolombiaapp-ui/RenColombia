@@ -9,11 +9,13 @@ import { useUserReview } from "@/hooks/use-reviews";
 import { createConversation } from "@/services/messagingService";
 import { useProfile } from "@/hooks/use-profile";
 import { useCreateIntention, useHasIntention } from "@/hooks/use-intentions";
+import { useActivePlan } from "@/hooks/use-has-active-plan";
 import Navbar from "@/components/layout/Navbar";
 import ReviewModal from "@/components/reviews/ReviewModal";
 import Footer from "@/components/layout/Footer";
 import PropertyMap from "@/components/properties/PropertyMap";
 import { ViewRequirementsModal } from "@/components/properties/ViewRequirementsModal";
+import ContractRequestModal from "@/components/contracts/ContractRequestModal";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
@@ -65,9 +67,15 @@ const PropertyDetail = () => {
   const incrementViews = useIncrementViews();
   const { data: userReview } = useUserReview();
   const { data: profile } = useProfile();
+  const { data: activePlan } = useActivePlan();
   const navigate = useNavigate();
   const createIntention = useCreateIntention();
   const { data: hasIntention, refetch: refetchHasIntention } = useHasIntention(id);
+  
+  // Verificar si es inquilino PRO
+  const isTenant = profile?.role === "tenant" || 
+                   (!profile?.publisher_type || profile.publisher_type === "select");
+  const isPro = activePlan?.plan_id?.includes("_pro") || activePlan?.plan_id === "tenant_pro";
   // Estado local para bloquear el botón inmediatamente después de hacer clic
   const [intentionSubmitted, setIntentionSubmitted] = useState(false);
 
@@ -95,6 +103,7 @@ const PropertyDetail = () => {
   const [tour360Index, setTour360Index] = useState(0);
   const tour360IntervalRef = useRef<NodeJS.Timeout | null>(null);
   const [viewRequirementsModalOpen, setViewRequirementsModalOpen] = useState(false);
+  const [contractRequestModalOpen, setContractRequestModalOpen] = useState(false);
 
   // Estado para mensaje de interés
   const [interestMessage, setInterestMessage] = useState("");
@@ -775,6 +784,24 @@ const PropertyDetail = () => {
                     )}
                   </Button>
                 )}
+
+                {/* Botón "Solicitar Contratación Digital" - Solo para inquilinos PRO */}
+                {user && property && user.id !== property.owner_id && isTenant && property.status === "published" && (
+                  <Button
+                    size="lg"
+                    className="w-full"
+                    variant="default"
+                    onClick={() => setContractRequestModalOpen(true)}
+                  >
+                    <FileText className="w-5 h-5 mr-2" />
+                    Solicitar Contratación Digital
+                    {isPro && (
+                      <Badge variant="secondary" className="ml-2">
+                        PRO
+                      </Badge>
+                    )}
+                  </Button>
+                )}
                 
                 {/* Botones de mensaje y favoritos */}
                 <div className="flex flex-col sm:flex-row gap-3">
@@ -1127,6 +1154,16 @@ const PropertyDetail = () => {
           propertyTitle={property.title}
           open={viewRequirementsModalOpen}
           onOpenChange={setViewRequirementsModalOpen}
+        />
+      )}
+
+      {/* Modal de Solicitud de Contrato */}
+      {user && property && (
+        <ContractRequestModal
+          open={contractRequestModalOpen}
+          onOpenChange={setContractRequestModalOpen}
+          propertyId={property.id}
+          propertyTitle={property.title}
         />
       )}
 
