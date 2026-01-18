@@ -174,6 +174,13 @@ export async function getUserProPlanInterests(): Promise<ProPlanInterest[]> {
  */
 export async function getProPlanInterestStats(): Promise<ProPlanInterestStats[]> {
   try {
+    // GUARD DEFENSIVO: Verificar que el usuario esté autenticado antes de llamar RPC
+    const { data: { user }, error: authError } = await supabase.auth.getUser();
+    
+    if (authError || !user?.id) {
+      throw new Error("Usuario no autenticado");
+    }
+    
     const { data, error } = await supabase.rpc("get_pro_plan_interest_stats");
 
     if (error) {

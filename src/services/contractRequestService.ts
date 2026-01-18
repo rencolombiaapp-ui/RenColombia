@@ -109,6 +109,12 @@ export async function createContractRequest(
     throw new Error("No puedes solicitar un contrato para tu propio inmueble");
   }
   
+  // GUARD DEFENSIVO: Verificar que el usuario esté autenticado antes de llamar RPC
+  const { data: { user }, error: authError } = await supabase.auth.getUser();
+  if (authError || !user?.id || user.id !== tenantId) {
+    throw new Error("Usuario no autenticado o no coincide con el inquilino");
+  }
+  
   // Llamar a la función RPC
   const { data: requestId, error } = await supabase.rpc("create_contract_request", {
     p_property_id: propertyId,
