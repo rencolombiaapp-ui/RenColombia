@@ -235,14 +235,14 @@ const HeroSection = ({ backgroundImage }: HeroSectionProps) => {
 
           {/* Heading */}
           <h1 className="text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-display font-bold text-white leading-tight">
-            Encuentra tu hogar
+            Arrienda inmuebles en Colombia
             <br />
-            <span className="text-accent">ideal en Colombia</span>
+            <span className="text-accent">de forma simple, segura y 100% digital</span>
           </h1>
 
           {/* Subtitle */}
           <p className="text-lg md:text-xl text-white/80 max-w-2xl mx-auto">
-            La plataforma más confiable para arrendar. Conectamos propietarios e inquilinos de manera segura, rápida y transparente.
+            Busca, analiza precios, comunica y genera contratos digitales en un solo lugar.
           </p>
 
           {/* Search Box */}
@@ -300,24 +300,40 @@ const HeroSection = ({ backgroundImage }: HeroSectionProps) => {
             </div>
           </div>
 
+          {/* CTAs */}
+          <div className="flex flex-wrap justify-center gap-4 mt-8 animate-slide-up" style={{ animationDelay: "0.4s" }}>
+            <Button
+              variant="hero"
+              size="lg"
+              onClick={() => handleSearch("")}
+              className="gap-2"
+            >
+              Buscar inmuebles
+            </Button>
+            <Button
+              variant="heroOutline"
+              size="lg"
+              onClick={() => navigate("/publicar")}
+              className="gap-2"
+            >
+              Publicar inmueble
+            </Button>
+          </div>
+
           {/* Stats */}
-          <div className="flex flex-wrap justify-center gap-8 md:gap-12 mt-12 animate-slide-up" style={{ animationDelay: "0.4s" }}>
+          <div className="flex flex-wrap justify-center gap-8 md:gap-12 mt-12 animate-slide-up" style={{ animationDelay: "0.6s" }}>
             <div className="text-center">
               <p className="text-3xl md:text-4xl font-bold text-white font-display">{propertiesCount}</p>
               <p className="text-white/70 text-sm mt-1">Propiedades</p>
             </div>
             <div className="text-center">
-              <p className="text-3xl md:text-4xl font-bold text-white font-display">1</p>
-              <p className="text-white/70 text-sm mt-1">Usuarios</p>
-            </div>
-            <div className="text-center">
-              <p className="text-3xl md:text-4xl font-bold text-white font-display">1</p>
-              <p className="text-white/70 text-sm mt-1">Ciudades</p>
-            </div>
-            <div className="text-center">
               <p className="text-3xl md:text-4xl font-bold text-white font-display">100%</p>
-              <p className="text-white/70 text-sm mt-1">Satisfacción</p>
-              </div>
+              <p className="text-white/70 text-sm mt-1">Digital</p>
+            </div>
+            <div className="text-center">
+              <p className="text-3xl md:text-4xl font-bold text-white font-display">Colombia</p>
+              <p className="text-white/70 text-sm mt-1">Nativo</p>
+            </div>
           </div>
         </div>
       </div>

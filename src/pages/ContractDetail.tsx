@@ -5,6 +5,8 @@ import Footer from "@/components/layout/Footer";
 import { useContract, useTenantApproveContract } from "@/hooks/use-contracts";
 import { useAuth } from "@/lib/auth";
 import { useProfile } from "@/hooks/use-profile";
+import ContractMessagesPanel from "@/components/contracts/ContractMessagesPanel";
+import ContractMessageInput from "@/components/contracts/ContractMessageInput";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -22,7 +24,8 @@ import {
   XCircle,
   AlertCircle,
   DollarSign,
-  Home
+  Home,
+  MessageCircle
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { 
@@ -249,6 +252,28 @@ const ContractDetail = () => {
                   className="prose prose-sm max-w-none"
                   dangerouslySetInnerHTML={{ __html: contract.contract_content || "<p>No hay contenido disponible.</p>" }}
                 />
+              </CardContent>
+            </Card>
+
+            {/* Mensajes del Contrato */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <MessageCircle className="w-5 h-5" />
+                  Mensajes del Contrato
+                </CardTitle>
+                <CardDescription>
+                  Conversación entre las partes del contrato
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <ContractMessagesPanel contractId={contract.id} />
+                <div className="border-t border-border pt-4">
+                  <ContractMessageInput
+                    contractId={contract.id}
+                    contractStatus={contract.status}
+                  />
+                </div>
               </CardContent>
             </Card>
           </div>

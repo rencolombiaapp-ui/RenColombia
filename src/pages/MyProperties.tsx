@@ -37,6 +37,7 @@ import { useProfile } from "@/hooks/use-profile";
 import { useMyProperties, useTogglePropertyStatus, useDeleteProperty, type PropertyWithStats } from "@/hooks/use-my-properties";
 import { useTotalFavorites } from "@/hooks/use-total-favorites";
 import { RentalRequirementsModal } from "@/components/properties/RentalRequirementsModal";
+import { PropertyContractBadge } from "@/components/contracts/PropertyContractBadge";
 import { cn } from "@/lib/utils";
 
 const MyProperties = () => {
@@ -302,6 +303,7 @@ const MyProperties = () => {
                                 {property.title}
                               </h3>
                               {getStatusBadge(property.status)}
+                              <PropertyContractBadge propertyId={property.id} />
                             </div>
 
                             <div className="flex items-center gap-1.5 text-muted-foreground text-sm">

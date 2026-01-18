@@ -3,8 +3,12 @@ import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
 import HeroSection from "@/components/home/HeroSection";
 import FeaturedProperties from "@/components/home/FeaturedProperties";
+import WhyRenColombia from "@/components/home/WhyRenColombia";
+import UserTypesSection from "@/components/home/UserTypesSection";
 import HowItWorks from "@/components/home/HowItWorks";
+import FlexiblePlansSection from "@/components/home/FlexiblePlansSection";
 import PriceInsightsSection from "@/components/home/PriceInsightsSection";
+import TrustSection from "@/components/home/TrustSection";
 import CTASection from "@/components/home/CTASection";
 import Testimonials from "@/components/home/Testimonials";
 import { defaultHeroImage } from "@/data/city-hero-images";
@@ -48,9 +52,13 @@ const Index = () => {
         <Navbar />
         <main>
           <HeroSection backgroundImage={defaultHeroImage.imageUrl} />
-          <FeaturedProperties />
+          <WhyRenColombia />
+          <UserTypesSection />
           <HowItWorks />
+          <FlexiblePlansSection />
+          <FeaturedProperties />
           <PriceInsightsSection />
+          <TrustSection />
           <Testimonials />
           <CTASection />
         </main>

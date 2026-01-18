@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Loader2, FileText, Calendar, MapPin, User, Building2, AlertCircle } from "lucide-react";
+import { ContractStatusBadge } from "@/components/contracts/ContractStatusBadge";
 import { cn } from "@/lib/utils";
 import type { RentalContractWithDetails, ContractRequestWithDetails } from "@/services/rentalContractService";
 
@@ -23,45 +24,6 @@ const Contracts = () => {
 
   const isTenant = profile?.role === "tenant" || 
                    (!profile?.publisher_type || profile.publisher_type === "select");
-
-  // Función para obtener el color del badge según el estado
-  const getStatusBadgeVariant = (status: string) => {
-    switch (status) {
-      case "active":
-      case "approved":
-      case "signed":
-        return "default"; // Verde
-      case "pending_tenant":
-      case "pending_owner":
-      case "pending":
-        return "secondary"; // Amarillo/Naranja
-      case "draft":
-        return "outline"; // Gris
-      case "cancelled":
-      case "rejected":
-      case "expired":
-        return "destructive"; // Rojo
-      default:
-        return "outline";
-    }
-  };
-
-  // Función para obtener el texto del estado
-  const getStatusText = (status: string) => {
-    const statusMap: Record<string, string> = {
-      draft: "Borrador",
-      pending_tenant: "Pendiente de Inquilino",
-      pending_owner: "Pendiente de Propietario",
-      approved: "Aprobado",
-      signed: "Firmado",
-      active: "Activo",
-      cancelled: "Cancelado",
-      expired: "Expirado",
-      pending: "Pendiente",
-      rejected: "Rechazado",
-    };
-    return statusMap[status] || status;
-  };
 
   // Función para formatear fecha
   const formatDate = (dateString: string | null) => {
@@ -153,9 +115,7 @@ const Contracts = () => {
                         <CardTitle className="text-lg line-clamp-1">
                           {contract.property_title}
                         </CardTitle>
-                        <Badge variant={getStatusBadgeVariant(contract.status)}>
-                          {getStatusText(contract.status)}
-                        </Badge>
+                        <ContractStatusBadge status={contract.status} />
                       </div>
                       <CardDescription className="flex items-center gap-1">
                         <MapPin className="w-4 h-4" />
@@ -240,9 +200,7 @@ const Contracts = () => {
                         <CardTitle className="text-lg line-clamp-1">
                           {request.property_title}
                         </CardTitle>
-                        <Badge variant={getStatusBadgeVariant(request.status)}>
-                          {getStatusText(request.status)}
-                        </Badge>
+                        <ContractStatusBadge status={request.status} />
                       </div>
                       <CardDescription className="flex items-center gap-1">
                         <MapPin className="w-4 h-4" />

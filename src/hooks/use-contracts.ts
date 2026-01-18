@@ -1,6 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useAuth } from "@/lib/auth";
 import { useProfile } from "@/hooks/use-profile";
+import { supabase } from "@/integrations/supabase/client";
 import { 
   getTenantContracts, 
   getOwnerContracts, 
@@ -137,5 +138,60 @@ export function useTenantApproveContract() {
         variant: "destructive",
       });
     },
+  });
+}
+
+/**
+ * Hook para verificar si el usuario es participante de un contrato activo para un inmueble
+ */
+export function useIsContractParticipant(propertyId: string | undefined) {
+  const { user } = useAuth();
+
+  return useQuery({
+    queryKey: ["contract-participant", propertyId, user?.id],
+    queryFn: async () => {
+      if (!propertyId || !user) return false;
+
+      const { data: contract, error } = await supabase
+        .from("rental_contracts")
+        .select("tenant_id, owner_id")
+        .eq("property_id", propertyId)
+        .in("status", ["draft", "pending_tenant", "pending_owner", "approved", "active", "signed"])
+        .maybeSingle();
+
+      if (error || !contract) return false;
+
+      return contract.tenant_id === user.id || contract.owner_id === user.id;
+    },
+    enabled: !!propertyId && !!user,
+    staleTime: 30 * 1000,
+  });
+}
+
+/**
+ * Hook para obtener el estado del contrato de un inmueble
+ * Retorna el estado del contrato más reciente para una propiedad
+ */
+export function usePropertyContractStatus(propertyId: string | undefined) {
+  const { user } = useAuth();
+
+  return useQuery({
+    queryKey: ["property-contract-status", propertyId],
+    queryFn: async () => {
+      if (!propertyId) return null;
+
+      const { data: contract, error } = await supabase
+        .from("rental_contracts")
+        .select("status")
+        .eq("property_id", propertyId)
+        .order("created_at", { ascending: false })
+        .maybeSingle();
+
+      if (error || !contract) return null;
+
+      return contract.status as string;
+    },
+    enabled: !!propertyId,
+    staleTime: 30 * 1000,
   });
 }

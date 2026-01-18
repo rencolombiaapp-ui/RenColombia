@@ -6,37 +6,108 @@
 -- 2. Propietario PRO
 -- 3. Inmobiliaria PRO
 --
--- IMPORTANTE: Ejecutar después de crear los planes en la tabla 'plans'
+-- IMPORTANTE: 
+-- - Requiere extensión pgcrypto habilitada
+-- - Crea usuarios directamente en auth.users
+-- - Crea automáticamente perfiles y suscripciones PRO
 -- ============================================
 
--- ============================================
--- 1. CREAR USUARIOS EN AUTH (Supabase Auth)
--- ============================================
--- Nota: Estos usuarios deben crearse manualmente en Supabase Auth Dashboard
--- o usando la API de Supabase Auth. Este script solo crea los perfiles y suscripciones.
+-- Verificar/crear extensiones necesarias
+CREATE EXTENSION IF NOT EXISTS "pgcrypto";
+CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 
 -- ============================================
--- 2. CREAR PERFILES Y SUSCRIPCIONES
+-- 1. CREAR PLAN tenant_pro (si no existe)
+-- ============================================
+INSERT INTO public.plans (id, name, description, price_monthly, user_type, max_properties, includes_price_insights) 
+VALUES (
+  'tenant_pro', 
+  'PRO', 
+  'Plan premium para inquilinos - Acceso a contratación digital y funcionalidades avanzadas', 
+  19900, 
+  'tenant', 
+  null, 
+  true
+)
+ON CONFLICT (id) DO UPDATE SET
+  description = EXCLUDED.description,
+  price_monthly = EXCLUDED.price_monthly,
+  includes_price_insights = EXCLUDED.includes_price_insights;
+
+-- ============================================
+-- 2. CREAR USUARIOS EN AUTH Y PERFILES
 -- ============================================
 
 -- Usuario 1: Inquilino PRO
 -- Email: tenant.pro@test.com
 -- Password: Test123456!
--- ID de usuario (reemplazar con el ID real del usuario creado en Auth):
 DO $$
 DECLARE
   v_tenant_pro_id uuid;
-  v_tenant_profile_id uuid;
+  v_email text := 'tenant.pro@test.com';
+  v_password text := 'Test123456!';
+  v_full_name text := 'Inquilino PRO Test';
+  v_encrypted_password text;
 BEGIN
-  -- Obtener el ID del usuario desde auth.users (ajustar email según corresponda)
+  -- Verificar si el usuario ya existe
   SELECT id INTO v_tenant_pro_id
   FROM auth.users
-  WHERE email = 'tenant.pro@test.com'
+  WHERE email = v_email
   LIMIT 1;
 
   IF v_tenant_pro_id IS NULL THEN
-    RAISE NOTICE 'Usuario tenant.pro@test.com no encontrado en auth.users. Por favor crea el usuario primero en Supabase Auth Dashboard.';
+    -- Generar UUID único para el usuario
+    v_tenant_pro_id := gen_random_uuid();
+    
+    -- Encriptar contraseña usando bcrypt
+    v_encrypted_password := crypt(v_password, gen_salt('bf', 10));
+    
+    -- Crear usuario en auth.users
+    INSERT INTO auth.users (
+      instance_id,
+      id,
+      aud,
+      role,
+      email,
+      encrypted_password,
+      email_confirmed_at,
+      recovery_sent_at,
+      last_sign_in_at,
+      raw_app_meta_data,
+      raw_user_meta_data,
+      created_at,
+      updated_at,
+      confirmation_token,
+      email_change,
+      email_change_token_new,
+      recovery_token
+    ) VALUES (
+      '00000000-0000-0000-0000-000000000000',
+      v_tenant_pro_id,
+      'authenticated',
+      'authenticated',
+      v_email,
+      v_encrypted_password,
+      now(),
+      now(),
+      now(),
+      '{"provider":"email","providers":["email"]}'::jsonb,
+      jsonb_build_object('full_name', v_full_name),
+      now(),
+      now(),
+      '',
+      '',
+      '',
+      ''
+    );
+    
+    RAISE NOTICE 'Usuario tenant.pro@test.com creado en auth.users con ID: %', v_tenant_pro_id;
   ELSE
+    RAISE NOTICE 'Usuario tenant.pro@test.com ya existe con ID: %', v_tenant_pro_id;
+  END IF;
+
+  -- Crear o actualizar perfil de inquilino
+  IF v_tenant_pro_id IS NOT NULL THEN
     -- Crear perfil de inquilino
     INSERT INTO public.profiles (
       id,
@@ -44,22 +115,19 @@ BEGIN
       full_name,
       role,
       publisher_type,
-      created_at,
-      updated_at
+      created_at
     ) VALUES (
       v_tenant_pro_id,
       'tenant.pro@test.com',
       'Inquilino PRO Test',
       'tenant',
       NULL,
-      NOW(),
       NOW()
     )
     ON CONFLICT (id) DO UPDATE SET
       full_name = 'Inquilino PRO Test',
       role = 'tenant',
-      publisher_type = NULL,
-      updated_at = NOW();
+      publisher_type = NULL;
 
     -- Crear suscripción PRO para inquilino
     -- Primero cancelar cualquier suscripción activa existente
@@ -92,7 +160,7 @@ BEGIN
     WHERE p.id = 'tenant_pro'
     LIMIT 1;
 
-    RAISE NOTICE 'Usuario Inquilino PRO creado/actualizado: %', v_tenant_pro_id;
+    RAISE NOTICE 'Perfil y suscripción Inquilino PRO creados/actualizados para usuario: %', v_tenant_pro_id;
   END IF;
 END $$;
 
@@ -102,15 +170,70 @@ END $$;
 DO $$
 DECLARE
   v_landlord_pro_id uuid;
+  v_email text := 'landlord.pro@test.com';
+  v_password text := 'Test123456!';
+  v_full_name text := 'Propietario PRO Test';
+  v_encrypted_password text;
 BEGIN
+  -- Verificar si el usuario ya existe
   SELECT id INTO v_landlord_pro_id
   FROM auth.users
-  WHERE email = 'landlord.pro@test.com'
+  WHERE email = v_email
   LIMIT 1;
 
   IF v_landlord_pro_id IS NULL THEN
-    RAISE NOTICE 'Usuario landlord.pro@test.com no encontrado en auth.users. Por favor crea el usuario primero en Supabase Auth Dashboard.';
+    -- Generar UUID único para el usuario
+    v_landlord_pro_id := gen_random_uuid();
+    
+    -- Encriptar contraseña usando bcrypt
+    v_encrypted_password := crypt(v_password, gen_salt('bf', 10));
+    
+    -- Crear usuario en auth.users
+    INSERT INTO auth.users (
+      instance_id,
+      id,
+      aud,
+      role,
+      email,
+      encrypted_password,
+      email_confirmed_at,
+      recovery_sent_at,
+      last_sign_in_at,
+      raw_app_meta_data,
+      raw_user_meta_data,
+      created_at,
+      updated_at,
+      confirmation_token,
+      email_change,
+      email_change_token_new,
+      recovery_token
+    ) VALUES (
+      '00000000-0000-0000-0000-000000000000',
+      v_landlord_pro_id,
+      'authenticated',
+      'authenticated',
+      v_email,
+      v_encrypted_password,
+      now(),
+      now(),
+      now(),
+      '{"provider":"email","providers":["email"]}'::jsonb,
+      jsonb_build_object('full_name', v_full_name),
+      now(),
+      now(),
+      '',
+      '',
+      '',
+      ''
+    );
+    
+    RAISE NOTICE 'Usuario landlord.pro@test.com creado en auth.users con ID: %', v_landlord_pro_id;
   ELSE
+    RAISE NOTICE 'Usuario landlord.pro@test.com ya existe con ID: %', v_landlord_pro_id;
+  END IF;
+
+  -- Crear o actualizar perfil de propietario
+  IF v_landlord_pro_id IS NOT NULL THEN
     -- Crear perfil de propietario
     INSERT INTO public.profiles (
       id,
@@ -118,22 +241,19 @@ BEGIN
       full_name,
       role,
       publisher_type,
-      created_at,
-      updated_at
+      created_at
     ) VALUES (
       v_landlord_pro_id,
       'landlord.pro@test.com',
       'Propietario PRO Test',
       'landlord',
       'individual',
-      NOW(),
       NOW()
     )
     ON CONFLICT (id) DO UPDATE SET
       full_name = 'Propietario PRO Test',
       role = 'landlord',
-      publisher_type = 'individual',
-      updated_at = NOW();
+      publisher_type = 'individual';
 
     -- Crear suscripción PRO para propietario
     -- Primero cancelar cualquier suscripción activa existente
@@ -166,7 +286,7 @@ BEGIN
     WHERE p.id = 'landlord_pro'
     LIMIT 1;
 
-    RAISE NOTICE 'Usuario Propietario PRO creado/actualizado: %', v_landlord_pro_id;
+    RAISE NOTICE 'Perfil y suscripción Propietario PRO creados/actualizados para usuario: %', v_landlord_pro_id;
   END IF;
 END $$;
 
@@ -176,15 +296,71 @@ END $$;
 DO $$
 DECLARE
   v_inmobiliaria_pro_id uuid;
+  v_email text := 'inmobiliaria.pro@test.com';
+  v_password text := 'Test123456!';
+  v_full_name text := 'Admin Inmobiliaria PRO';
+  v_company_name text := 'Inmobiliaria PRO Test S.A.S.';
+  v_encrypted_password text;
 BEGIN
+  -- Verificar si el usuario ya existe
   SELECT id INTO v_inmobiliaria_pro_id
   FROM auth.users
-  WHERE email = 'inmobiliaria.pro@test.com'
+  WHERE email = v_email
   LIMIT 1;
 
   IF v_inmobiliaria_pro_id IS NULL THEN
-    RAISE NOTICE 'Usuario inmobiliaria.pro@test.com no encontrado en auth.users. Por favor crea el usuario primero en Supabase Auth Dashboard.';
+    -- Generar UUID único para el usuario
+    v_inmobiliaria_pro_id := gen_random_uuid();
+    
+    -- Encriptar contraseña usando bcrypt
+    v_encrypted_password := crypt(v_password, gen_salt('bf', 10));
+    
+    -- Crear usuario en auth.users
+    INSERT INTO auth.users (
+      instance_id,
+      id,
+      aud,
+      role,
+      email,
+      encrypted_password,
+      email_confirmed_at,
+      recovery_sent_at,
+      last_sign_in_at,
+      raw_app_meta_data,
+      raw_user_meta_data,
+      created_at,
+      updated_at,
+      confirmation_token,
+      email_change,
+      email_change_token_new,
+      recovery_token
+    ) VALUES (
+      '00000000-0000-0000-0000-000000000000',
+      v_inmobiliaria_pro_id,
+      'authenticated',
+      'authenticated',
+      v_email,
+      v_encrypted_password,
+      now(),
+      now(),
+      now(),
+      '{"provider":"email","providers":["email"]}'::jsonb,
+      jsonb_build_object('full_name', v_full_name),
+      now(),
+      now(),
+      '',
+      '',
+      '',
+      ''
+    );
+    
+    RAISE NOTICE 'Usuario inmobiliaria.pro@test.com creado en auth.users con ID: %', v_inmobiliaria_pro_id;
   ELSE
+    RAISE NOTICE 'Usuario inmobiliaria.pro@test.com ya existe con ID: %', v_inmobiliaria_pro_id;
+  END IF;
+
+  -- Crear o actualizar perfil de inmobiliaria
+  IF v_inmobiliaria_pro_id IS NOT NULL THEN
     -- Crear perfil de inmobiliaria
     INSERT INTO public.profiles (
       id,
@@ -193,8 +369,7 @@ BEGIN
       role,
       publisher_type,
       company_name,
-      created_at,
-      updated_at
+      created_at
     ) VALUES (
       v_inmobiliaria_pro_id,
       'inmobiliaria.pro@test.com',
@@ -202,15 +377,13 @@ BEGIN
       'landlord',
       'inmobiliaria',
       'Inmobiliaria PRO Test S.A.S.',
-      NOW(),
       NOW()
     )
     ON CONFLICT (id) DO UPDATE SET
       full_name = 'Admin Inmobiliaria PRO',
       role = 'landlord',
       publisher_type = 'inmobiliaria',
-      company_name = 'Inmobiliaria PRO Test S.A.S.',
-      updated_at = NOW();
+      company_name = 'Inmobiliaria PRO Test S.A.S.';
 
     -- Crear suscripción PRO para inmobiliaria
     -- Primero cancelar cualquier suscripción activa existente
@@ -243,7 +416,7 @@ BEGIN
     WHERE p.id = 'inmobiliaria_pro'
     LIMIT 1;
 
-    RAISE NOTICE 'Usuario Inmobiliaria PRO creado/actualizado: %', v_inmobiliaria_pro_id;
+    RAISE NOTICE 'Perfil y suscripción Inmobiliaria PRO creados/actualizados para usuario: %', v_inmobiliaria_pro_id;
   END IF;
 END $$;
 
@@ -275,23 +448,18 @@ ORDER BY p.email;
 -- ============================================
 -- NOTAS IMPORTANTES:
 -- ============================================
--- 1. Antes de ejecutar este script, debes crear los usuarios en Supabase Auth Dashboard:
---    - Ve a Authentication > Users > Add User
---    - Crea los tres usuarios con los emails especificados
---    - Establece la contraseña: Test123456!
---    - Copia los IDs de usuario generados
+-- 1. Este script crea automáticamente los usuarios en auth.users
+--    No necesitas crearlos manualmente en Supabase Auth Dashboard
 --
--- 2. Si prefieres usar la API, puedes crear usuarios con:
---    supabase.auth.admin.createUser({
---      email: 'tenant.pro@test.com',
---      password: 'Test123456!',
---      email_confirm: true
---    })
+-- 2. Los usuarios se crean con:
+--    - Email confirmado automáticamente
+--    - Contraseña: Test123456!
+--    - Perfiles creados automáticamente por el trigger handle_new_user()
+--    - Suscripciones PRO activas creadas
 --
--- 3. Asegúrate de que los planes existan en la tabla 'plans':
---    - tenant_pro
---    - landlord_pro
---    - inmobiliaria_pro
+-- 3. El script también crea el plan 'tenant_pro' si no existe
+--
+-- 4. Si los usuarios ya existen, el script los actualiza sin crear duplicados
 --
 -- 4. Para verificar KYC, puedes crear verificaciones de prueba ejecutando:
 --    INSERT INTO public.kyc_verifications (

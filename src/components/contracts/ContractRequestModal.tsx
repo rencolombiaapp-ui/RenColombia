@@ -5,7 +5,7 @@ import { useProfile } from "@/hooks/use-profile";
 import { useCreateContractRequest } from "@/hooks/use-contracts";
 import { hasActiveKYCVerification } from "@/services/kycService";
 import { useActivePlan } from "@/hooks/use-has-active-plan";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -19,6 +19,7 @@ import {
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Loader2, CheckCircle, AlertCircle, Crown, FileText } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import KYCVerificationModal from "@/components/kyc/KYCVerificationModal";
 
 interface ContractRequestModalProps {
   open: boolean;
@@ -39,6 +40,8 @@ const ContractRequestModal = ({
   const createRequest = useCreateContractRequest();
   const navigate = useNavigate();
   const { toast } = useToast();
+  const queryClient = useQueryClient();
+  const [kycModalOpen, setKycModalOpen] = useState(false);
 
   // Verificar si tiene plan PRO
   const isPro = activePlan?.plan_id?.includes("_pro") || activePlan?.plan_id === "tenant_pro";
@@ -70,7 +73,7 @@ const ContractRequestModal = ({
         title: "Verificación KYC requerida",
         description: "Debes completar tu verificación KYC antes de solicitar contratos.",
       });
-      // TODO: Navegar a página de KYC cuando esté implementada
+      setKycModalOpen(true);
       return;
     }
 
@@ -149,8 +152,14 @@ const ContractRequestModal = ({
             <Alert variant="destructive">
               <AlertCircle className="h-4 w-4" />
               <AlertDescription>
-                Debes completar tu verificación KYC antes de solicitar contratos.
-                {/* TODO: Agregar link a página de KYC */}
+                Debes completar tu verificación KYC antes de solicitar contratos.{" "}
+                <Button
+                  variant="link"
+                  className="p-0 h-auto ml-1"
+                  onClick={() => setKycModalOpen(true)}
+                >
+                  Completar verificación
+                </Button>
               </AlertDescription>
             </Alert>
           )}
@@ -188,6 +197,16 @@ const ContractRequestModal = ({
           </Button>
         </DialogFooter>
       </DialogContent>
+
+      {/* Modal de verificación KYC */}
+      <KYCVerificationModal
+        open={kycModalOpen}
+        onOpenChange={setKycModalOpen}
+        onComplete={() => {
+          // Refrescar estado de KYC después de completar
+          queryClient.invalidateQueries({ queryKey: ["kyc-verification", user?.id] });
+        }}
+      />
     </Dialog>
   );
 };

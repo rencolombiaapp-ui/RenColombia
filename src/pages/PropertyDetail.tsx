@@ -10,6 +10,7 @@ import { createConversation } from "@/services/messagingService";
 import { useProfile } from "@/hooks/use-profile";
 import { useCreateIntention, useHasIntention } from "@/hooks/use-intentions";
 import { useActivePlan } from "@/hooks/use-has-active-plan";
+import { useIsContractParticipant } from "@/hooks/use-contracts";
 import Navbar from "@/components/layout/Navbar";
 import ReviewModal from "@/components/reviews/ReviewModal";
 import Footer from "@/components/layout/Footer";
@@ -78,6 +79,21 @@ const PropertyDetail = () => {
   const isPro = activePlan?.plan_id?.includes("_pro") || activePlan?.plan_id === "tenant_pro";
   // Estado local para bloquear el botón inmediatamente después de hacer clic
   const [intentionSubmitted, setIntentionSubmitted] = useState(false);
+
+  // Verificar si el usuario es participante de un contrato activo para este inmueble
+  const { data: isContractParticipant = false } = useIsContractParticipant(id);
+  
+  // Verificar si el inmueble está bloqueado para contratación
+  const isLockedForContract = property?.status === "locked_for_contract";
+  
+  // Verificar si el usuario puede ver/interactuar con el inmueble bloqueado
+  const canAccessLockedProperty = isLockedForContract && (
+    property?.owner_id === user?.id || // Propietario siempre puede ver
+    isContractParticipant // Participante del contrato puede ver
+  );
+  
+  // Verificar si el inmueble debe estar oculto para este usuario
+  const shouldHideProperty = isLockedForContract && !canAccessLockedProperty;
 
   // Sincronizar el estado local con la query cuando cambia
   useEffect(() => {
@@ -385,8 +401,9 @@ const PropertyDetail = () => {
                 {/* Favorite Button */}
                 <button
                   onClick={handleFavoriteClick}
-                  disabled={toggleFavorite.isPending}
+                  disabled={toggleFavorite.isPending || (isLockedForContract && !canAccessLockedProperty)}
                   className="absolute top-4 right-4 w-12 h-12 rounded-full bg-white/90 backdrop-blur-sm flex items-center justify-center shadow-md hover:scale-110 transition-transform disabled:opacity-50"
+                  title={isLockedForContract && !canAccessLockedProperty ? "No disponible: inmueble en proceso de contratación" : ""}
                 >
                   <Heart
                     className={cn(
@@ -464,10 +481,30 @@ const PropertyDetail = () => {
             <div className="space-y-6">
               {/* Price */}
               <div>
-                <p className="text-3xl md:text-4xl font-bold text-primary font-display">
-                  {formatPrice(property.price)}
-                  <span className="text-lg font-normal text-muted-foreground font-sans">/mes</span>
-                </p>
+                <div className="flex items-center gap-3 mb-2">
+                  <p className="text-3xl md:text-4xl font-bold text-primary font-display">
+                    {formatPrice(property.price)}
+                    <span className="text-lg font-normal text-muted-foreground font-sans">/mes</span>
+                  </p>
+                  {isLockedForContract && (
+                    <Badge variant="secondary" className="text-xs">
+                      {property.owner_id === user?.id ? "Contrato en curso" : "En proceso de contratación"}
+                    </Badge>
+                  )}
+                </div>
+                {/* Mensaje contextual para inmueble bloqueado */}
+                {isLockedForContract && (
+                  <Alert className="mt-3">
+                    <AlertCircle className="h-4 w-4" />
+                    <AlertDescription className="text-sm">
+                      {property.owner_id === user?.id 
+                        ? "Este inmueble tiene un contrato en proceso. Puedes gestionarlo desde la sección de contratos."
+                        : isContractParticipant
+                        ? "Este inmueble está en proceso de contratación contigo. Puedes ver el estado del contrato en la sección de contratos."
+                        : "Este inmueble está en proceso de contratación con otro inquilino."}
+                    </AlertDescription>
+                  </Alert>
+                )}
               </div>
 
               {/* Title */}
@@ -724,7 +761,7 @@ const PropertyDetail = () => {
               {/* Actions */}
               <div className="flex flex-col gap-3 pt-4">
                 {/* Botón "Quiero este inmueble" - Solo para inquilinos */}
-                {user && property && user.id !== property.owner_id && profile?.role === "tenant" && (
+                {user && property && user.id !== property.owner_id && profile?.role === "tenant" && !isLockedForContract && (
                   <Button
                     size="lg"
                     className="w-full"
@@ -786,7 +823,7 @@ const PropertyDetail = () => {
                 )}
 
                 {/* Botón "Solicitar Contratación Digital" - Solo para inquilinos PRO */}
-                {user && property && user.id !== property.owner_id && isTenant && property.status === "published" && (
+                {user && property && user.id !== property.owner_id && isTenant && property.status === "published" && !isLockedForContract && (
                   <Button
                     size="lg"
                     className="w-full"
@@ -802,6 +839,32 @@ const PropertyDetail = () => {
                     )}
                   </Button>
                 )}
+
+                {/* Botón "Ver Contrato" para participantes cuando está bloqueado */}
+                {isLockedForContract && isContractParticipant && (
+                  <Button
+                    size="lg"
+                    className="w-full"
+                    variant="default"
+                    onClick={() => {
+                      // Obtener el ID del contrato activo y navegar
+                      supabase
+                        .from("rental_contracts")
+                        .select("id")
+                        .eq("property_id", property.id)
+                        .in("status", ["draft", "pending_tenant", "pending_owner", "approved", "active", "signed"])
+                        .maybeSingle()
+                        .then(({ data: contract }) => {
+                          if (contract) {
+                            navigate(`/contratos/${contract.id}`);
+                          }
+                        });
+                    }}
+                  >
+                    <FileText className="w-5 h-5 mr-2" />
+                    Ver Contrato
+                  </Button>
+                )}
                 
                 {/* Botones de mensaje y favoritos */}
                 <div className="flex flex-col sm:flex-row gap-3">
@@ -810,6 +873,7 @@ const PropertyDetail = () => {
                       size="lg"
                       className="flex-1"
                       onClick={handleInterestClick}
+                      disabled={isLockedForContract && !isContractParticipant}
                     >
                       <MessageCircle className="w-5 h-5 mr-2" />
                       Enviar mensaje de interés
@@ -821,6 +885,7 @@ const PropertyDetail = () => {
                       className="flex-1"
                       onClick={handleInterestClick}
                       variant={user && property && user.id === property.owner_id ? "outline" : "default"}
+                      disabled={isLockedForContract && !canAccessLockedProperty}
                     >
                       <MessageCircle className="w-5 h-5 mr-2" />
                       {user && property && user.id === property.owner_id ? "Ver información" : "Estoy interesado"}
@@ -830,7 +895,7 @@ const PropertyDetail = () => {
                     size="lg"
                     className="flex-1"
                     onClick={handleFavoriteClick}
-                    disabled={toggleFavorite.isPending}
+                    disabled={toggleFavorite.isPending || (isLockedForContract && !canAccessLockedProperty)}
                     variant={isFavorite ? "outline" : "default"}
                   >
                     <Heart

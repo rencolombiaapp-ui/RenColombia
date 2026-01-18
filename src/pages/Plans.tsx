@@ -15,6 +15,8 @@ import {
   Loader2,
   Lock,
   BarChart3,
+  Store,
+  ArrowRight,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/lib/auth";
@@ -69,7 +71,7 @@ const Plans = () => {
     }
 
     // Verificar si es un plan PRO (temporalmente deshabilitado)
-    if (planId === "landlord_pro" || planId === "inmobiliaria_pro") {
+    if (planId === "tenant_pro" || planId === "landlord_pro" || planId === "inmobiliaria_pro") {
       toast({
         variant: "default",
         title: "Plan PRO próximamente",
@@ -122,14 +124,22 @@ const Plans = () => {
 
     if (plan.id === "landlord_pro") {
       return [
-        "Publicar hasta 5 inmuebles",
-        "Destacar hasta 5 inmuebles",
-        "Análisis de precio por zona",
-        "Precio recomendado al publicar",
-        "Comparación del inmueble con el mercado",
-        "Métricas básicas (visitas, favoritos)",
-        "Prioridad en resultados de búsqueda",
+        // Publicación y visibilidad
+        "Publicar hasta 5 inmuebles activos",
+        "Destacar hasta 5 inmuebles para mayor visibilidad",
+        "Prioridad en los resultados de búsqueda",
+        // Inteligencia de precios
+        "Análisis de precio por zona (ciudad y barrio)",
+        "Precio recomendado al momento de publicar",
+        "Comparación del inmueble con el mercado local",
         "Acceso completo al módulo de inteligencia de precios",
+        // Métricas y control
+        "Métricas básicas: visitas y favoritos por inmueble",
+        // Contratación digital
+        "Recepción de solicitudes de contrato verificadas",
+        "Generación de contratos digitales de arrendamiento",
+        "Bloqueo automático del inmueble durante contratación",
+        "Mensajería segura y trazable con el inquilino",
       ];
     }
 
@@ -146,22 +156,139 @@ const Plans = () => {
 
     if (plan.id === "inmobiliaria_pro") {
       return [
-        "Inmuebles ilimitados",
-        "Destacar hasta 100 inmuebles al mes",
-        "Análisis de precios premium",
-        "Marca destacada",
-        "Visibilidad prioritaria",
-        "Dashboard avanzado",
-        "Analíticas detalladas",
-        "Soporte prioritario",
-        "Exportar reportes",
-        "Acceso a históricos",
+        // Gestión y escala
+        "Publicación de inmuebles ilimitados",
+        "Gestión centralizada de propiedades",
+        "Control de estados y contratos desde un solo dashboard",
+        // Visibilidad y marca
+        "Destaca hasta 100 inmuebles al mes",
+        "Marca destacada frente a usuarios finales",
+        "Visibilidad prioritaria en resultados de búsqueda",
+        // Inteligencia y analítica avanzada
+        "Análisis de precios premium por zona",
+        "Analíticas detalladas de desempeño",
+        "Dashboard avanzado con métricas clave",
+        "Acceso a históricos de precios y actividad",
+        "Exportación de reportes para uso interno",
+        // Contratación digital a escala
+        "Recepción de solicitudes de contrato verificadas",
+        "Generación y gestión de contratos digitales",
+        "Bloqueo automático de inmuebles durante contratación",
+        "Mensajería segura y trazable con inquilinos",
+        // Soporte y acompañamiento
+        "Soporte prioritario para operaciones críticas",
       ];
     }
 
     return [];
   };
 
+  // Vista intermedia para usuarios NO autenticados
+  if (!user) {
+    return (
+      <div className="min-h-screen bg-background">
+        <Navbar />
+        
+        <main className="pt-20 md:pt-24">
+          <div className="container mx-auto px-4 py-8">
+            {/* Back Button */}
+            <Link
+              to="/"
+              className="inline-flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors mb-6 w-fit"
+            >
+              <ArrowLeft className="w-4 h-4" />
+              <span>Volver al inicio</span>
+            </Link>
+
+            {/* Vista Intermedia Educativa */}
+            <div className="max-w-4xl mx-auto">
+              {/* Header */}
+              <div className="text-center mb-12">
+                <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 text-primary mb-4">
+                  <Building2 className="w-4 h-4" />
+                  <span className="text-sm font-semibold">Planes Flexibles</span>
+                </div>
+                <h1 className="text-3xl md:text-4xl font-display font-bold text-foreground mb-4">
+                  Planes diseñados según cómo uses RenColombia
+                </h1>
+                <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+                  RenColombia ofrece planes pensados para cada tipo de usuario.
+                  Para mostrarte el plan adecuado, primero necesitamos saber
+                  cómo quieres usar la plataforma.
+                </p>
+              </div>
+
+              {/* Sección Informativa */}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
+                {/* Inquilinos */}
+                <div className="bg-card rounded-2xl p-6 border border-border/50">
+                  <div className="w-14 h-14 rounded-2xl bg-blue-500/10 text-blue-600 flex items-center justify-center mb-5">
+                    <Users className="w-7 h-7" />
+                  </div>
+                  <h3 className="text-xl font-bold text-foreground mb-3 font-display">
+                    Inquilinos
+                  </h3>
+                  <p className="text-muted-foreground text-sm">
+                    Busca inmuebles, analiza precios y contrata de forma digital.
+                  </p>
+                </div>
+
+                {/* Propietarios */}
+                <div className="bg-card rounded-2xl p-6 border border-border/50">
+                  <div className="w-14 h-14 rounded-2xl bg-emerald-500/10 text-emerald-600 flex items-center justify-center mb-5">
+                    <Building2 className="w-7 h-7" />
+                  </div>
+                  <h3 className="text-xl font-bold text-foreground mb-3 font-display">
+                    Propietarios
+                  </h3>
+                  <p className="text-muted-foreground text-sm">
+                    Publica inmuebles, recibe solicitudes y genera contratos digitales.
+                  </p>
+                </div>
+
+                {/* Inmobiliarias */}
+                <div className="bg-card rounded-2xl p-6 border border-border/50">
+                  <div className="w-14 h-14 rounded-2xl bg-purple-500/10 text-purple-600 flex items-center justify-center mb-5">
+                    <Store className="w-7 h-7" />
+                  </div>
+                  <h3 className="text-xl font-bold text-foreground mb-3 font-display">
+                    Inmobiliarias
+                  </h3>
+                  <p className="text-muted-foreground text-sm">
+                    Gestiona múltiples inmuebles, contratos y métricas desde un solo lugar.
+                  </p>
+                </div>
+              </div>
+
+              {/* CTAs */}
+              <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
+                <Button
+                  size="lg"
+                  onClick={() => navigate("/auth?mode=register")}
+                  className="gap-2 group"
+                >
+                  Crear cuenta y ver planes
+                  <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                </Button>
+                <Button
+                  variant="outline"
+                  size="lg"
+                  onClick={() => navigate("/auth")}
+                  className="gap-2"
+                >
+                  Iniciar sesión
+                </Button>
+              </div>
+            </div>
+          </div>
+        </main>
+
+        <Footer />
+      </div>
+    );
+  }
+
+  // Vista normal para usuarios autenticados (comportamiento actual)
   return (
     <div className="min-h-screen bg-background">
       <Navbar />
@@ -247,9 +374,9 @@ const Plans = () => {
                       <h3 className="text-2xl font-display font-bold text-foreground mb-2">
                         {plan.id === "tenant_free" ? "🆓 Plan Gratis"
                           : plan.id === "landlord_free" ? "🆓 Plan Gratis" 
-                          : plan.id === "landlord_pro" ? "⭐ Plan PRO"
+                          : plan.id === "landlord_pro" ? "⭐ Propietario PRO"
                           : plan.id === "inmobiliaria_free" ? "🆓 Plan Inmobiliaria Free"
-                          : plan.id === "inmobiliaria_pro" ? "⭐ Plan PRO"
+                          : plan.id === "inmobiliaria_pro" ? "⭐ Inmobiliaria PRO"
                           : `Plan ${plan.name}`}
                       </h3>
                       <p className="text-muted-foreground mb-4 text-sm">
@@ -258,9 +385,11 @@ const Plans = () => {
                           : plan.id === "landlord_free" 
                           ? "Pensado para probar la plataforma y subir un inmueble básico"
                           : plan.id === "landlord_pro"
-                          ? "Pensado para propietarios que quieren resultados reales"
+                          ? "Publica, analiza y cierra contratos con mayor control"
                           : plan.id === "inmobiliaria_free"
                           ? "Perfil básico de inmobiliaria con hasta 3 inmuebles"
+                          : plan.id === "inmobiliaria_pro"
+                          ? "Escala tu operación con gestión y contratos digitales"
                           : plan.description || "Plan para usuarios"}
                       </p>
                       <div className="flex items-baseline justify-center gap-2">
@@ -290,27 +419,23 @@ const Plans = () => {
                       {plan.id === "landlord_free" && (
                         <>
                           <div className="pt-2 border-t border-border mt-4">
-                            <p className="text-xs font-semibold text-muted-foreground mb-2">No incluye:</p>
+                            <p className="text-xs font-semibold text-muted-foreground mb-2">El Plan PRO desbloquea:</p>
                             <ul className="space-y-2">
                               <li className="flex items-start gap-2">
                                 <span className="text-destructive">❌</span>
-                                <span className="text-xs text-muted-foreground">Análisis de precios por zona</span>
+                                <span className="text-xs text-muted-foreground">Mayor capacidad de publicación (hasta 5 inmuebles)</span>
                               </li>
                               <li className="flex items-start gap-2">
                                 <span className="text-destructive">❌</span>
-                                <span className="text-xs text-muted-foreground">Precio recomendado para publicar</span>
+                                <span className="text-xs text-muted-foreground">Inteligencia de precios completa</span>
                               </li>
                               <li className="flex items-start gap-2">
                                 <span className="text-destructive">❌</span>
-                                <span className="text-xs text-muted-foreground">Comparación con el mercado</span>
+                                <span className="text-xs text-muted-foreground">Mayor visibilidad (destacar inmuebles)</span>
                               </li>
                               <li className="flex items-start gap-2">
                                 <span className="text-destructive">❌</span>
-                                <span className="text-xs text-muted-foreground">Métricas avanzadas</span>
-                              </li>
-                              <li className="flex items-start gap-2">
-                                <span className="text-destructive">❌</span>
-                                <span className="text-xs text-muted-foreground">Publicaciones destacadas</span>
+                                <span className="text-xs text-muted-foreground">Herramientas de contratación digital</span>
                               </li>
                             </ul>
                           </div>
@@ -348,43 +473,23 @@ const Plans = () => {
                       {plan.id === "inmobiliaria_free" && (
                         <>
                           <div className="pt-2 border-t border-border mt-4">
-                            <p className="text-xs font-semibold text-muted-foreground mb-2">No incluye:</p>
+                            <p className="text-xs font-semibold text-muted-foreground mb-2">El Plan PRO desbloquea:</p>
                             <ul className="space-y-2">
                               <li className="flex items-start gap-2">
                                 <span className="text-destructive">❌</span>
-                                <span className="text-xs text-muted-foreground">Análisis de precios por zona</span>
+                                <span className="text-xs text-muted-foreground">Escalabilidad operativa (inmuebles ilimitados)</span>
                               </li>
                               <li className="flex items-start gap-2">
                                 <span className="text-destructive">❌</span>
-                                <span className="text-xs text-muted-foreground">Comparación de precios con el mercado</span>
+                                <span className="text-xs text-muted-foreground">Analítica avanzada y reportes</span>
                               </li>
                               <li className="flex items-start gap-2">
                                 <span className="text-destructive">❌</span>
-                                <span className="text-xs text-muted-foreground">Precio recomendado para publicar</span>
+                                <span className="text-xs text-muted-foreground">Mayor visibilidad y marca destacada</span>
                               </li>
                               <li className="flex items-start gap-2">
                                 <span className="text-destructive">❌</span>
-                                <span className="text-xs text-muted-foreground">Métricas avanzadas</span>
-                              </li>
-                              <li className="flex items-start gap-2">
-                                <span className="text-destructive">❌</span>
-                                <span className="text-xs text-muted-foreground">Branding destacado</span>
-                              </li>
-                              <li className="flex items-start gap-2">
-                                <span className="text-destructive">❌</span>
-                                <span className="text-xs text-muted-foreground">Prioridad en resultados</span>
-                              </li>
-                              <li className="flex items-start gap-2">
-                                <span className="text-destructive">❌</span>
-                                <span className="text-xs text-muted-foreground">Publicaciones ilimitadas</span>
-                              </li>
-                              <li className="flex items-start gap-2">
-                                <span className="text-destructive">❌</span>
-                                <span className="text-xs text-muted-foreground">Exportar reportes</span>
-                              </li>
-                              <li className="flex items-start gap-2">
-                                <span className="text-destructive">❌</span>
-                                <span className="text-xs text-muted-foreground">Acceso a históricos</span>
+                                <span className="text-xs text-muted-foreground">Contratación digital centralizada</span>
                               </li>
                             </ul>
                           </div>
@@ -408,6 +513,16 @@ const Plans = () => {
                         <>
                           <Shield className="w-4 h-4 mr-2" />
                           Ya lo tienes
+                        </>
+                      ) : plan.id === "landlord_pro" ? (
+                        <>
+                          <Star className="w-4 h-4 mr-2" />
+                          Contratar plan Propietario PRO
+                        </>
+                      ) : plan.id === "inmobiliaria_pro" ? (
+                        <>
+                          <Star className="w-4 h-4 mr-2" />
+                          Contratar plan Inmobiliaria PRO
                         </>
                       ) : (
                         <>
