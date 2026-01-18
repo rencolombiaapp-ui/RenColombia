@@ -89,12 +89,6 @@ export async function sendContractMessage(
     rpcParams.p_change_request_data = changeRequestData;
   }
   
-  // GUARD DEFENSIVO: Verificar que el usuario esté autenticado antes de llamar RPC
-  const { data: { user }, error: authError } = await supabase.auth.getUser();
-  if (authError || !user?.id) {
-    throw new Error("Usuario no autenticado");
-  }
-  
   // Llamar a la función RPC
   const { data: messageId, error } = await supabase.rpc("send_contract_message", rpcParams);
   

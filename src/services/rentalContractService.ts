@@ -187,12 +187,6 @@ export async function startContract(
     rpcParams.p_start_date = startDate;
   }
   
-  // GUARD DEFENSIVO: Verificar que el usuario esté autenticado antes de llamar RPC
-  const { data: { user }, error: authError } = await supabase.auth.getUser();
-  if (authError || !user?.id) {
-    throw new Error("Usuario no autenticado");
-  }
-  
   // Llamar a la función RPC
   const { data: contractId, error } = await supabase.rpc("start_contract", rpcParams);
   
