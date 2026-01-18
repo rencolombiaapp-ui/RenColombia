@@ -217,7 +217,7 @@ const Auth = () => {
           {isLogin && (
             <div className="flex items-center justify-end">
               <Link
-                to="/recuperar-contrasena"
+                to="/forgot-password"
                 className="text-sm text-primary hover:text-primary/80 font-medium"
               >
                 ¿Olvidaste tu contraseña?

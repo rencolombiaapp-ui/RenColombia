@@ -77,7 +77,7 @@ const ReviewModal = ({ open, onOpenChange }: ReviewModalProps) => {
 
   return (
     <Dialog open={open} onOpenChange={handleClose}>
-      <DialogContent className="sm:max-w-md">
+      <DialogContent className="sm:max-w-md z-[1000]">
         <DialogHeader>
           <DialogTitle>¿Cómo ha sido tu experiencia con RenColombia?</DialogTitle>
           <DialogDescription>

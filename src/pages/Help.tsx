@@ -1,7 +1,7 @@
 import { Link } from "react-router-dom";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
-import { ArrowLeft, HelpCircle, Building2, MessageCircle, DollarSign, Search } from "lucide-react";
+import { ArrowLeft, HelpCircle, Building2, MessageCircle, DollarSign, Search, AlertCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Accordion,
@@ -148,14 +148,14 @@ const Help = () => {
                 <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
                   <MessageCircle className="w-6 h-6 text-primary" />
                 </div>
-                <div>
+                <div className="flex-1">
                   <h3 className="text-lg font-semibold text-foreground mb-2">
                     ¿No encuentras lo que buscas?
                   </h3>
                   <p className="text-muted-foreground mb-4">
                     Si tienes más preguntas o necesitas ayuda adicional, puedes contactarnos:
                   </p>
-                  <div className="space-y-2">
+                  <div className="space-y-2 mb-4">
                     <p className="text-sm text-muted-foreground">
                       <strong>Email:</strong>{" "}
                       <a href="mailto:info@rencolombia.com" className="text-primary hover:underline">
@@ -169,6 +169,12 @@ const Help = () => {
                       </a>
                     </p>
                   </div>
+                  <Link to="/reportar-problema">
+                    <Button className="w-full sm:w-auto">
+                      <AlertCircle className="w-4 h-4 mr-2" />
+                      Reportar un problema
+                    </Button>
+                  </Link>
                 </div>
               </div>
             </div>

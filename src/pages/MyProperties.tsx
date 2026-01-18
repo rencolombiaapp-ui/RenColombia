@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
 import { Button } from "@/components/ui/button";
@@ -25,10 +25,18 @@ import {
   Edit,
   Trash2,
   Star,
+  FileText,
+  BedDouble,
+  Bath,
+  Square,
+  Car,
+  Layers,
 } from "lucide-react";
 import { useAuth } from "@/lib/auth";
 import { useProfile } from "@/hooks/use-profile";
 import { useMyProperties, useTogglePropertyStatus, useDeleteProperty, type PropertyWithStats } from "@/hooks/use-my-properties";
+import { useTotalFavorites } from "@/hooks/use-total-favorites";
+import { RentalRequirementsModal } from "@/components/properties/RentalRequirementsModal";
 import { cn } from "@/lib/utils";
 
 const MyProperties = () => {
@@ -37,9 +45,11 @@ const MyProperties = () => {
   const { data: properties = [], isLoading } = useMyProperties();
   const toggleStatus = useTogglePropertyStatus();
   const deleteProperty = useDeleteProperty();
+  const navigate = useNavigate();
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [propertyToDelete, setPropertyToDelete] = useState<PropertyWithStats | null>(null);
-  const [featuredDialogOpen, setFeaturedDialogOpen] = useState(false);
+  const [requirementsModalOpen, setRequirementsModalOpen] = useState(false);
+  const [selectedPropertyForRequirements, setSelectedPropertyForRequirements] = useState<PropertyWithStats | null>(null);
 
   const isInmobiliaria = profile?.publisher_type === "inmobiliaria";
   const publishedPropertiesCount = Array.isArray(properties) ? properties.filter((p) => p.status === "published").length : 0;
@@ -57,7 +67,8 @@ const MyProperties = () => {
   // Estadísticas totales
   const totalPublished = properties.filter((p) => p.status === "published").length;
   const totalViews = properties.reduce((sum, p) => sum + (p.views_count || 0), 0);
-  const totalFavorites = properties.reduce((sum, p) => sum + p.favorites_count, 0);
+  // Usar el hook dedicado para obtener el total de favoritos (se actualiza en tiempo real)
+  const totalFavorites = useTotalFavorites();
 
   // Obtener imagen principal
   const getPrimaryImage = (property: PropertyWithStats) => {
@@ -93,7 +104,15 @@ const MyProperties = () => {
                 Mis Inmuebles
               </h1>
               <p className="text-muted-foreground">
-                Hola, {user?.user_metadata?.full_name || user?.email?.split("@")[0]}. Gestiona tus propiedades.
+                {isInmobiliaria && profile?.company_name ? (
+                  <>
+                    Hola, {user?.user_metadata?.full_name || user?.email?.split("@")[0]}, {profile.company_name}. Gestiona tus propiedades.
+                  </>
+                ) : (
+                  <>
+                    Hola, {user?.user_metadata?.full_name || user?.email?.split("@")[0]}. Gestiona tus propiedades.
+                  </>
+                )}
               </p>
             </div>
             <Link to="/publicar">
@@ -118,6 +137,32 @@ const MyProperties = () => {
                     </h3>
                     <p className="text-sm text-muted-foreground">
                       Descubre cómo puedes hacer crecer tu inmobiliaria con más visibilidad y herramientas avanzadas.
+                    </p>
+                  </div>
+                </div>
+                <Link to="/planes">
+                  <Button variant="default" className="w-full sm:w-auto">
+                    Ver planes
+                  </Button>
+                </Link>
+              </div>
+            </div>
+          )}
+
+          {/* Banner para propietarios */}
+          {!isInmobiliaria && profile?.role === "landlord" && (
+            <div className="bg-gradient-to-r from-primary/10 to-accent/10 border border-primary/20 rounded-xl p-4 md:p-6 mb-8">
+              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                <div className="flex items-start gap-4">
+                  <div className="w-12 h-12 rounded-lg bg-primary/20 flex items-center justify-center flex-shrink-0">
+                    <Building2 className="w-6 h-6 text-primary" />
+                  </div>
+                  <div>
+                    <h3 className="font-semibold text-foreground mb-1">
+                      Conoce nuestros planes para propietarios
+                    </h3>
+                    <p className="text-sm text-muted-foreground">
+                      Descubre cómo puedes hacer crecer tus propiedades con más visibilidad, análisis de precios y herramientas avanzadas.
                     </p>
                   </div>
                 </div>
@@ -236,9 +281,9 @@ const MyProperties = () => {
                       "hover:border-primary/30 transition-colors"
                     )}
                   >
-                    <div className="flex flex-col sm:flex-row">
+                    <div className="flex flex-col sm:flex-row sm:items-stretch">
                       {/* Image */}
-                      <div className="sm:w-48 sm:h-36 aspect-video sm:aspect-auto flex-shrink-0">
+                      <div className="sm:w-64 aspect-video sm:aspect-auto flex-shrink-0 sm:self-stretch">
                         <img
                           src={getPrimaryImage(property)}
                           alt={property.title}
@@ -248,7 +293,7 @@ const MyProperties = () => {
                       </div>
 
                       {/* Content */}
-                      <div className="flex-grow p-4 sm:p-5">
+                      <div className="flex-grow p-4 sm:p-5 flex flex-col">
                         <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
                           {/* Info */}
                           <div className="space-y-2 flex-grow">
@@ -272,8 +317,74 @@ const MyProperties = () => {
                               <span className="text-sm font-normal text-muted-foreground">/mes</span>
                             </p>
 
+                            {/* Características básicas */}
+                            <div className="flex items-center gap-4 text-sm text-muted-foreground flex-wrap">
+                              <div className="flex items-center gap-1.5">
+                                <BedDouble className="w-4 h-4" />
+                                <span>{property.bedrooms} {property.bedrooms === 1 ? "habitación" : "habitaciones"}</span>
+                              </div>
+                              <div className="flex items-center gap-1.5">
+                                <Bath className="w-4 h-4" />
+                                <span>{property.bathrooms} {property.bathrooms === 1 ? "baño" : "baños"}</span>
+                              </div>
+                              {property.area && (
+                                <div className="flex items-center gap-1.5">
+                                  <Square className="w-4 h-4" />
+                                  <span>{property.area} m²</span>
+                                </div>
+                              )}
+                              {property.tiene_parqueadero && (
+                                <div className="flex items-center gap-1.5">
+                                  <Car className="w-4 h-4" />
+                                  <span>
+                                    {property.cantidad_parqueaderos || 1} {property.cantidad_parqueaderos === 1 ? "parqueadero" : "parqueaderos"}
+                                  </span>
+                                </div>
+                              )}
+                            </div>
+
+                            {/* Descripción */}
+                            {property.description && (
+                              <p className="text-sm text-muted-foreground line-clamp-2">
+                                {property.description}
+                              </p>
+                            )}
+
+                            {/* Características adicionales */}
+                            {property.caracteristicas && property.caracteristicas.length > 0 && (
+                              <div className="flex flex-wrap gap-2">
+                                {property.caracteristicas.slice(0, 5).map((caracteristica, idx) => (
+                                  <Badge key={idx} variant="secondary" className="text-xs">
+                                    <Layers className="w-3 h-3 mr-1" />
+                                    {caracteristica}
+                                  </Badge>
+                                ))}
+                                {property.caracteristicas.length > 5 && (
+                                  <Badge variant="secondary" className="text-xs">
+                                    +{property.caracteristicas.length - 5} más
+                                  </Badge>
+                                )}
+                              </div>
+                            )}
+
+                            {/* Información adicional */}
+                            <div className="flex items-center gap-4 text-xs text-muted-foreground flex-wrap pt-1">
+                              {property.incluye_administracion && (
+                                <span className="flex items-center gap-1">
+                                  <Layers className="w-3 h-3" />
+                                  Administración incluida
+                                </span>
+                              )}
+                              {property.estrato && (
+                                <span>Estrato {property.estrato}</span>
+                              )}
+                              {property.property_type && (
+                                <span className="capitalize">{property.property_type}</span>
+                              )}
+                            </div>
+
                             {/* Stats */}
-                            <div className="flex items-center gap-4 text-sm text-muted-foreground">
+                            <div className="flex items-center gap-4 text-sm text-muted-foreground pt-2 border-t border-border">
                               <div className="flex items-center gap-1.5">
                                 <Eye className="w-4 h-4" />
                                 <span>{property.views_count || 0} vistas</span>
@@ -293,6 +404,19 @@ const MyProperties = () => {
                                 Ver
                               </Button>
                             </Link>
+                            {/* Botón Agregar requisitos */}
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              className="flex-1 sm:flex-none gap-1.5"
+                              onClick={() => {
+                                setSelectedPropertyForRequirements(property);
+                                setRequirementsModalOpen(true);
+                              }}
+                            >
+                              <FileText className="w-4 h-4" />
+                              Requisitos
+                            </Button>
                             {/* Botón Destacar - solo visible si está publicado */}
                             {property.status === "published" && (
                               <Button
@@ -302,7 +426,7 @@ const MyProperties = () => {
                                   "flex-1 sm:flex-none gap-1.5",
                                   property.is_featured && "bg-primary text-primary-foreground"
                                 )}
-                                onClick={() => setFeaturedDialogOpen(true)}
+                                onClick={() => navigate("/planes")}
                               >
                                 <Star className={cn("w-4 h-4", property.is_featured && "fill-current")} />
                                 {property.is_featured ? "Destacado" : "Destacar"}
@@ -419,33 +543,18 @@ const MyProperties = () => {
         </DialogContent>
       </Dialog>
 
-      {/* Dialog informativo para destacar inmueble */}
-      <Dialog open={featuredDialogOpen} onOpenChange={setFeaturedDialogOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <div className="flex items-center gap-3 mb-2">
-              <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center">
-                <Star className="w-6 h-6 text-primary fill-primary" />
-              </div>
-              <DialogTitle>Destacar inmueble</DialogTitle>
-            </div>
-            <DialogDescription className="text-base">
-              Próximamente podrás destacar tu inmueble para tener más visibilidad en las búsquedas.
-              <br /><br />
-              Los inmuebles destacados aparecen primero en los resultados y tienen mayor exposición, lo que aumenta las posibilidades de encontrar inquilinos.
-            </DialogDescription>
-          </DialogHeader>
-          <DialogFooter>
-            <Button
-              variant="outline"
-              onClick={() => setFeaturedDialogOpen(false)}
-              className="w-full sm:w-auto"
-            >
-              Entendido
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      {/* Modal de Requisitos */}
+      {selectedPropertyForRequirements && (
+        <RentalRequirementsModal
+          propertyId={selectedPropertyForRequirements.id}
+          propertyTitle={selectedPropertyForRequirements.title}
+          open={requirementsModalOpen}
+          onOpenChange={setRequirementsModalOpen}
+          onSuccess={() => {
+            // Refrescar la lista si es necesario
+          }}
+        />
+      )}
 
       <Footer />
     </div>
