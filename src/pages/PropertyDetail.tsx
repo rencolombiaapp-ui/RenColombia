@@ -463,7 +463,7 @@ const PropertyDetail = () => {
               )}
 
               {/* Mapa de Ubicación - Ocultar cuando cualquier modal está abierto */}
-              {!tour360DialogOpen && !viewRequirementsModalOpen && !contactDialogOpen && !messageDialogOpen && !interestDialogOpen && !showReviewModal && (
+              {!tour360DialogOpen && !viewRequirementsModalOpen && !contactDialogOpen && !messageDialogOpen && !interestDialogOpen && !showReviewModal && !contractRequestModalOpen && (
                 <PropertyMap
                   propertyId={property.id}
                   latitude={property.latitude}

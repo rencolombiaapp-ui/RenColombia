@@ -52,14 +52,15 @@ const Index = () => {
         <Navbar />
         <main>
           <HeroSection backgroundImage={defaultHeroImage.imageUrl} />
+          <FeaturedProperties />
           <WhyRenColombia />
           <UserTypesSection />
           <HowItWorks />
-          <FlexiblePlansSection />
-          <FeaturedProperties />
+          {/* MVP: Secciones ocultas para simplificar el landing */}
+          {/* <FlexiblePlansSection /> */}
           <PriceInsightsSection />
-          <TrustSection />
-          <Testimonials />
+          {/* <TrustSection /> */}
+          {/* <Testimonials /> */}
           <CTASection />
         </main>
         <Footer />

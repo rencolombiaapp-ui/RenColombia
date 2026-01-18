@@ -235,14 +235,14 @@ const HeroSection = ({ backgroundImage }: HeroSectionProps) => {
 
           {/* Heading */}
           <h1 className="text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-display font-bold text-white leading-tight">
-            Arrienda inmuebles en Colombia
+            Arrienda sin papeleo.
             <br />
-            <span className="text-accent">de forma simple, segura y 100% digital</span>
+            <span className="text-accent">Todo digital. Todo claro.</span>
           </h1>
 
           {/* Subtitle */}
           <p className="text-lg md:text-xl text-white/80 max-w-2xl mx-auto">
-            Busca, analiza precios, comunica y genera contratos digitales en un solo lugar.
+            Contratos digitales, análisis de precios y verificación para arrendar con confianza en Colombia.
           </p>
 
           {/* Search Box */}

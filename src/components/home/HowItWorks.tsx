@@ -1,28 +1,29 @@
 import { Search, MessageCircle, FileText, CheckCircle } from "lucide-react";
 
+// MVP: Descripciones reducidas a 1 línea por paso
 const steps = [
   {
     icon: Search,
     title: "Publica o busca un inmueble",
-    description: "Publica tu propiedad gratis o busca entre miles de opciones verificadas en Colombia.",
+    description: "Publica tu propiedad gratis o busca entre miles de opciones verificadas.",
     color: "bg-blue-500/10 text-blue-600",
   },
   {
     icon: MessageCircle,
     title: "Comunícate y analiza precios",
-    description: "Habla directamente con propietarios o inquilinos y analiza precios por zona con datos reales.",
+    description: "Habla directamente con propietarios o inquilinos y analiza precios por zona.",
     color: "bg-emerald-500/10 text-emerald-600",
   },
   {
     icon: FileText,
     title: "Genera y aprueba el contrato",
-    description: "Crea contratos digitales automáticamente, revísalos y aprueba todo en línea.",
+    description: "Crea contratos digitales automáticamente y aprueba todo en línea.",
     color: "bg-purple-500/10 text-purple-600",
   },
   {
     icon: CheckCircle,
     title: "Cierra el arrendamiento digitalmente",
-    description: "Completa todo el proceso sin papeles. El inmueble se bloquea automáticamente durante la contratación.",
+    description: "Completa todo el proceso sin papeles con bloqueo automático del inmueble.",
     color: "bg-accent/20 text-accent",
   },
 ];

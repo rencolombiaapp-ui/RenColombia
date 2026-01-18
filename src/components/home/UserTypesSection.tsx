@@ -2,15 +2,15 @@ import { Link } from "react-router-dom";
 import { Users, Building2, Store, ArrowRight, CheckCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
+// MVP: Reducido a máximo 3 bullets por tipo de usuario para simplificar
 const userTypes = [
   {
     icon: Users,
     title: "Inquilinos",
     description: "Encuentra tu próximo hogar con herramientas que facilitan todo el proceso.",
     features: [
-      "Encuentra inmuebles reales verificados",
+      "Encuentra inmuebles verificados",
       "Solicita contratos digitales (PRO)",
-      "Comunícate directamente con propietarios",
       "Más seguridad y menos fricción",
     ],
     cta: "Buscar inmuebles",
@@ -25,7 +25,6 @@ const userTypes = [
       "Publica y gestiona inmuebles fácilmente",
       "Genera contratos digitales",
       "Bloquea inmuebles en proceso automáticamente",
-      "Analiza precios por zona (PRO)",
     ],
     cta: "Publicar inmueble",
     ctaLink: "/publicar",
@@ -37,7 +36,6 @@ const userTypes = [
     description: "Gestión centralizada para múltiples inmuebles con herramientas profesionales.",
     features: [
       "Gestión centralizada de portafolio",
-      "Múltiples inmuebles en un solo lugar",
       "Contratos digitales escalables",
       "Métricas y visibilidad mejorada (PRO)",
     ],

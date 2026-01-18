@@ -112,6 +112,16 @@ const Plans = () => {
       ];
     }
 
+    if (plan.id === "tenant_pro") {
+      return [
+        "Solicitar contratos digitales de arrendamiento",
+        "Verificación de identidad (KYC)",
+        "Comunicación directa dentro del contrato",
+        "Mayor seguridad y menos fricción",
+        "Acceso a análisis de precios por zona",
+      ];
+    }
+
     if (plan.id === "landlord_free") {
       return [
         "Publicar 1 inmueble",
@@ -373,6 +383,7 @@ const Plans = () => {
                     <div className="text-center mb-6">
                       <h3 className="text-2xl font-display font-bold text-foreground mb-2">
                         {plan.id === "tenant_free" ? "🆓 Plan Gratis"
+                          : plan.id === "tenant_pro" ? "⭐ Inquilino PRO"
                           : plan.id === "landlord_free" ? "🆓 Plan Gratis" 
                           : plan.id === "landlord_pro" ? "⭐ Propietario PRO"
                           : plan.id === "inmobiliaria_free" ? "🆓 Plan Inmobiliaria Free"
@@ -382,6 +393,8 @@ const Plans = () => {
                       <p className="text-muted-foreground mb-4 text-sm">
                         {plan.id === "tenant_free"
                           ? "Acceso completo a búsqueda y funcionalidades básicas"
+                          : plan.id === "tenant_pro"
+                          ? "Contratos digitales, verificación KYC y análisis de precios"
                           : plan.id === "landlord_free" 
                           ? "Pensado para probar la plataforma y subir un inmueble básico"
                           : plan.id === "landlord_pro"
@@ -441,30 +454,31 @@ const Plans = () => {
                           </div>
                         </>
                       )}
-                      {plan.id === "tenant_free" && (
+                      {/* MVP: Mostrar beneficios PRO para inquilinos solo si NO son PRO */}
+                      {plan.id === "tenant_free" && (!activePlan || !activePlan.plan_id?.includes("_pro")) && (
                         <>
                           <div className="pt-2 border-t border-border mt-4">
-                            <p className="text-xs font-semibold text-muted-foreground mb-2">No incluye:</p>
+                            <p className="text-xs font-semibold text-muted-foreground mb-2">El Plan PRO desbloquea:</p>
                             <ul className="space-y-2">
                               <li className="flex items-start gap-2">
-                                <span className="text-destructive">❌</span>
-                                <span className="text-xs text-muted-foreground">Análisis de precios por zona</span>
+                                <span className="text-primary">✔</span>
+                                <span className="text-xs text-muted-foreground">Solicitar contratos digitales de arrendamiento</span>
                               </li>
                               <li className="flex items-start gap-2">
-                                <span className="text-destructive">❌</span>
-                                <span className="text-xs text-muted-foreground">Comparación "precio justo / caro"</span>
+                                <span className="text-primary">✔</span>
+                                <span className="text-xs text-muted-foreground">Verificación de identidad (KYC)</span>
                               </li>
                               <li className="flex items-start gap-2">
-                                <span className="text-destructive">❌</span>
-                                <span className="text-xs text-muted-foreground">Alertas avanzadas</span>
+                                <span className="text-primary">✔</span>
+                                <span className="text-xs text-muted-foreground">Comunicación directa dentro del contrato</span>
                               </li>
                               <li className="flex items-start gap-2">
-                                <span className="text-destructive">❌</span>
-                                <span className="text-xs text-muted-foreground">Recomendaciones inteligentes</span>
+                                <span className="text-primary">✔</span>
+                                <span className="text-xs text-muted-foreground">Mayor seguridad y menos fricción</span>
                               </li>
                               <li className="flex items-start gap-2">
-                                <span className="text-destructive">❌</span>
-                                <span className="text-xs text-muted-foreground">Históricos de precios</span>
+                                <span className="text-primary">✔</span>
+                                <span className="text-xs text-muted-foreground">Acceso a análisis de precios por zona</span>
                               </li>
                             </ul>
                           </div>
@@ -513,6 +527,11 @@ const Plans = () => {
                         <>
                           <Shield className="w-4 h-4 mr-2" />
                           Ya lo tienes
+                        </>
+                      ) : plan.id === "tenant_pro" ? (
+                        <>
+                          <Star className="w-4 h-4 mr-2" />
+                          Contratar plan Inquilino PRO
                         </>
                       ) : plan.id === "landlord_pro" ? (
                         <>

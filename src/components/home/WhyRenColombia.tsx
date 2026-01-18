@@ -1,5 +1,6 @@
-import { FileText, Lock, BarChart3, MessageCircle, MapPin } from "lucide-react";
+import { FileText, Lock, BarChart3 } from "lucide-react";
 
+// MVP: Solo 3 diferenciales principales para simplificar el landing
 const features = [
   {
     icon: FileText,
@@ -19,18 +20,8 @@ const features = [
     description: "Conoce el precio real del mercado en tu ciudad y barrio con datos actualizados.",
     color: "bg-purple-500/10 text-purple-600",
   },
-  {
-    icon: MessageCircle,
-    title: "Mensajería segura entre partes",
-    description: "Comunícate directamente con propietarios o inquilinos dentro del contexto del contrato.",
-    color: "bg-orange-500/10 text-orange-600",
-  },
-  {
-    icon: MapPin,
-    title: "Plataforma pensada para Colombia",
-    description: "Diseñada específicamente para el mercado colombiano, con ciudades, barrios y regulaciones locales.",
-    color: "bg-accent/20 text-accent",
-  },
+  // MVP: Mensajería y plataforma Colombia ocultas para simplificar
+  // Se pueden reactivar en futuras versiones
 ];
 
 const WhyRenColombia = () => {
@@ -50,8 +41,8 @@ const WhyRenColombia = () => {
           </p>
         </div>
 
-        {/* Features Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
+        {/* Features Grid - MVP: Solo 3 diferenciales */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8">
           {features.map((feature, index) => (
             <div
               key={feature.title}
