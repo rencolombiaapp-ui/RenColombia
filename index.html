@@ -19,5 +19,18 @@
   <body>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
+    
+    <!-- BugHerd: Solo para ambiente QA (Vercel) -->
+    <script>
+      // Cargar BugHerd únicamente en ambiente de QA (Vercel)
+      // NO se carga en producción para mantener seguridad y rendimiento
+      if (location.hostname.includes("vercel.app")) {
+        const bugherdScript = document.createElement("script");
+        bugherdScript.type = "text/javascript";
+        bugherdScript.async = true;
+        bugherdScript.src = "https://www.bugherd.com/sidebarv2.js?apikey=bgaukk4daruigkopx05y0a";
+        document.body.appendChild(bugherdScript);
+      }
+    </script>
   </body>
 </html>
