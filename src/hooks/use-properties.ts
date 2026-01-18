@@ -31,6 +31,7 @@ export function useProperties(options: UsePropertiesOptions = {}) {
             profiles (*)
           `)
           .eq("status", "published")
+          .neq("status", "locked_for_contract") // Excluir inmuebles bloqueados para contratación
           .order("created_at", { ascending: false });
 
       // Filtros opcionales (excepto ciudad que se filtra localmente para normalización de tildes)
@@ -129,7 +130,8 @@ export function usePropertiesCount() {
         const { count, error } = await supabase
           .from("properties")
           .select("*", { count: "exact", head: true })
-          .eq("status", "published");
+          .eq("status", "published")
+          .neq("status", "locked_for_contract"); // Excluir inmuebles bloqueados para contratación
 
         if (error) {
           // Si la tabla no existe aún, retornar 0 silenciosamente
@@ -195,6 +197,7 @@ export function usePublisherProperties(publisherId: string | undefined) {
         `)
         .eq("owner_id", publisherId)
         .eq("status", "published")
+        .neq("status", "locked_for_contract") // Excluir inmuebles bloqueados para contratación
         .order("created_at", { ascending: false });
 
       if (error) {

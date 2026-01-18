@@ -1,28 +1,29 @@
-import { Search, FileCheck, Home, CreditCard } from "lucide-react";
+import { Search, MessageCircle, FileText, CheckCircle } from "lucide-react";
 
+// MVP: Descripciones reducidas a 1 línea por paso
 const steps = [
   {
     icon: Search,
-    title: "Publica tu inmueble",
-    description: "Publica tu propiedad de forma gratuita y rápida. Sube fotos y completa la información en minutos.",
+    title: "Publica o busca un inmueble",
+    description: "Publica tu propiedad gratis o busca entre miles de opciones verificadas.",
     color: "bg-blue-500/10 text-blue-600",
   },
   {
-    icon: FileCheck,
-    title: "Gestiona desde tu dashboard",
-    description: "Controla todas tus propiedades desde un solo lugar. Activa, pausa o edita cuando quieras.",
-    color: "bg-emerald-500/10 text-emerald",
+    icon: MessageCircle,
+    title: "Comunícate y analiza precios",
+    description: "Habla directamente con propietarios o inquilinos y analiza precios por zona.",
+    color: "bg-emerald-500/10 text-emerald-600",
   },
   {
-    icon: Home,
-    title: "Mide el interés",
-    description: "Ve cuántas personas han visto tu inmueble y cuántas lo han guardado en favoritos.",
+    icon: FileText,
+    title: "Genera y aprueba el contrato",
+    description: "Crea contratos digitales automáticamente y aprueba todo en línea.",
     color: "bg-purple-500/10 text-purple-600",
   },
   {
-    icon: CreditCard,
-    title: "Control total",
-    description: "Tú decides qué propiedades mostrar y cuándo. Sin intermediarios, sin complicaciones.",
+    icon: CheckCircle,
+    title: "Cierra el arrendamiento digitalmente",
+    description: "Completa todo el proceso sin papeles con bloqueo automático del inmueble.",
     color: "bg-accent/20 text-accent",
   },
 ];
@@ -40,7 +41,7 @@ const HowItWorks = () => {
             ¿Cómo funciona RenColombia?
           </h2>
           <p className="text-muted-foreground mt-4">
-            Gestiona tus propiedades de forma simple y profesional. Todo el control en tus manos.
+            Un proceso simple en 4 pasos para arrendar de forma digital y segura.
           </p>
         </div>
 

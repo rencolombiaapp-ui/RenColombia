@@ -101,6 +101,9 @@ const SearchPage = () => {
     
     let filtered = properties;
     
+    // Excluir inmuebles bloqueados para contratación (ya filtrados en backend, pero por seguridad)
+    filtered = filtered.filter(p => p.status !== "locked_for_contract");
+    
     // Filtrar por texto de búsqueda (título, ciudad, barrio) - insensible a tildes
     if (searchQuery) {
       const normalizedQuery = normalizeText(searchQuery);

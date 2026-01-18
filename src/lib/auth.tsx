@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useState, ReactNode } from "react";
+import { createContext, useContext, useEffect, useState, useRef, ReactNode } from "react";
 import { User, Session } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -13,29 +13,102 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
+// Singleton para prevenir múltiples listeners con HMR
+// Usar window para persistir a través de hot reloads
+const AUTH_SUBSCRIPTION_KEY = '__RENCOLOMBIA_AUTH_SUBSCRIPTION__';
+
+function getAuthSubscription() {
+  if (typeof window !== 'undefined') {
+    return (window as any)[AUTH_SUBSCRIPTION_KEY] as ReturnType<typeof supabase.auth.onAuthStateChange>['data']['subscription'] | undefined;
+  }
+  return undefined;
+}
+
+function setAuthSubscription(subscription: ReturnType<typeof supabase.auth.onAuthStateChange>['data']['subscription'] | null) {
+  if (typeof window !== 'undefined') {
+    (window as any)[AUTH_SUBSCRIPTION_KEY] = subscription;
+  }
+}
+
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
+  const mountedRef = useRef(true);
+  const subscriptionRef = useRef<ReturnType<typeof supabase.auth.onAuthStateChange>['data']['subscription'] | null>(null);
 
   useEffect(() => {
+    mountedRef.current = true;
+    let isMounted = true;
+
     // Obtener sesión inicial
     supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session);
-      setUser(session?.user ?? null);
-      setLoading(false);
-    });
-
-    // Escuchar cambios de autenticación
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (_event, session) => {
+      if (isMounted && mountedRef.current) {
         setSession(session);
         setUser(session?.user ?? null);
         setLoading(false);
       }
+    }).catch((err) => {
+      console.error('[Auth] Error getting session:', err);
+      if (isMounted && mountedRef.current) {
+        setLoading(false);
+      }
+    });
+
+    // Limpiar suscripción anterior SOLO si existe y es diferente (HMR)
+    const existingSubscription = getAuthSubscription();
+    if (existingSubscription && existingSubscription !== subscriptionRef.current) {
+      // Desuscribir inmediatamente solo si es una suscripción huérfana de HMR
+      try {
+        existingSubscription.unsubscribe();
+      } catch (e) {
+        // Ignorar errores silenciosamente
+      }
+      setAuthSubscription(null);
+    }
+
+    // Limpiar referencia anterior solo si es diferente
+    if (subscriptionRef.current && subscriptionRef.current !== existingSubscription) {
+      try {
+        subscriptionRef.current.unsubscribe();
+      } catch (e) {
+        // Ignorar errores
+      }
+    }
+
+    // Escuchar cambios de autenticación
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      (_event, session) => {
+        if (isMounted && mountedRef.current) {
+          setSession(session);
+          setUser(session?.user ?? null);
+          setLoading(false);
+        }
+      }
     );
 
-    return () => subscription.unsubscribe();
+    subscriptionRef.current = subscription;
+    setAuthSubscription(subscription);
+
+    return () => {
+      isMounted = false;
+      mountedRef.current = false;
+      
+      // Cleanup inmediato pero seguro
+      if (subscriptionRef.current === subscription) {
+        try {
+          subscriptionRef.current.unsubscribe();
+        } catch (e) {
+          // Ignorar errores
+        }
+        subscriptionRef.current = null;
+      }
+      
+      const currentSubscription = getAuthSubscription();
+      if (currentSubscription === subscription) {
+        setAuthSubscription(null);
+      }
+    };
   }, []);
 
   const signUp = async (email: string, password: string, fullName: string) => {

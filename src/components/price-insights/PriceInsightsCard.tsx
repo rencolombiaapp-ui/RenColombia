@@ -3,10 +3,17 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
-import { TrendingUp, TrendingDown, Minus, Lock, BarChart3, Eye } from "lucide-react";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { TrendingUp, TrendingDown, Minus, Lock, BarChart3, Eye, Info } from "lucide-react";
 import { useHasActivePlan } from "@/hooks/use-has-active-plan";
 import { PriceInsightResult } from "@/services/priceInsightsService";
 import { cn } from "@/lib/utils";
+import {
+  getPriceInsightTexts,
+  getSourceBadgeText,
+  getSampleSizeText,
+  getDisclaimerText,
+} from "@/lib/priceInsightsTexts";
 
 interface PriceInsightsCardProps {
   insights: PriceInsightResult | null;
@@ -82,6 +89,11 @@ export function PriceInsightsCard({
               ? `Precios en ${city}${neighborhood ? ` - ${neighborhood}` : ""} para ${propertyType}s`
               : "Conoce el precio promedio de arriendo en tu zona"}
           </CardDescription>
+          {insights.source === "market" && (
+            <p className="text-xs text-muted-foreground mt-2">
+              Estimación basada en datos agregados del mercado
+            </p>
+          )}
         </CardHeader>
         <CardContent className="relative space-y-4">
           <div className="space-y-2">
@@ -103,6 +115,12 @@ export function PriceInsightsCard({
             </div>
           </div>
 
+          {insights.data_sources_attribution && (
+            <div className="text-xs text-muted-foreground italic text-center">
+              {insights.data_sources_attribution}
+            </div>
+          )}
+
           <div className="pt-4 border-t">
             <p className="text-sm text-muted-foreground mb-4">
               Desbloquea el análisis completo de precios con un plan premium. Obtén insights detallados,
@@ -120,18 +138,35 @@ export function PriceInsightsCard({
   }
 
   // Usuario con plan activo - mostrar datos completos
+  const texts = getPriceInsightTexts(insights, city, neighborhood, propertyType, hasActivePlan);
+  const sourceBadge = getSourceBadgeText(insights.source, insights.analysis_level);
+  const disclaimer = getDisclaimerText(insights, hasActivePlan);
+
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <BarChart3 className="w-5 h-5" />
-          Análisis de Precio por Zona
-        </CardTitle>
-        <CardDescription>
-          {city && propertyType
-            ? `Precios en ${city}${neighborhood ? ` - ${neighborhood}` : ""} para ${propertyType}s`
-            : "Análisis basado en inmuebles comparables"}
-        </CardDescription>
+        <div className="flex items-center justify-between">
+          <CardTitle className="flex items-center gap-2">
+            <BarChart3 className="w-5 h-5" />
+            {texts.title}
+          </CardTitle>
+          {sourceBadge && (
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Badge variant="outline" className="gap-1">
+                    <Info className="w-3 h-3" />
+                    {sourceBadge}
+                  </Badge>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p className="max-w-xs">{texts.sourceTooltip}</p>
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+          )}
+        </div>
+        <CardDescription>{texts.description}</CardDescription>
       </CardHeader>
       <CardContent className="space-y-6">
         {/* Estadísticas principales */}
@@ -214,12 +249,36 @@ export function PriceInsightsCard({
           </div>
         )}
 
-        {/* Muestra de datos */}
-        <div className="pt-4 border-t">
+        {/* Muestra de datos y fuentes */}
+        <div className="pt-4 border-t space-y-2">
           <p className="text-xs text-muted-foreground text-center">
-            Basado en {insights.sample_size} inmueble{insights.sample_size !== 1 ? "s" : ""}{" "}
-            comparable{insights.sample_size !== 1 ? "s" : ""} en esta zona
+            {getSampleSizeText(insights, neighborhood, city)}
           </p>
+          {disclaimer && (
+            <div className="flex items-start gap-2 p-2 bg-muted/50 rounded-md">
+              <Info className="w-3 h-3 text-muted-foreground mt-0.5 flex-shrink-0" />
+              <p className="text-xs text-muted-foreground">{disclaimer}</p>
+            </div>
+          )}
+          {insights.data_sources_attribution && (
+            <p className="text-xs text-muted-foreground text-center italic">
+              {insights.data_sources_attribution}
+            </p>
+          )}
+          {insights.dane_validation && insights.dane_validation.coherence_status !== "no_data" && (
+            <div className="text-xs text-muted-foreground text-center">
+              <p>
+                Referencia DANE: ${insights.dane_validation.reference_price?.toLocaleString() || "N/A"}
+                {insights.dane_validation.data_period && ` (${insights.dane_validation.data_period})`}
+              </p>
+              {insights.dane_validation.deviation_percentage !== null && (
+                <p className="text-xs">
+                  Desviación: {Math.abs(insights.dane_validation.deviation_percentage).toFixed(1)}%
+                  {insights.dane_validation.deviation_percentage > 0 ? " por encima" : " por debajo"} del promedio DANE
+                </p>
+              )}
+            </div>
+          )}
         </div>
       </CardContent>
     </Card>

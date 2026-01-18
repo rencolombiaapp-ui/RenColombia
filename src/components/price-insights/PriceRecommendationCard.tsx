@@ -2,10 +2,11 @@ import { Link } from "react-router-dom";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Lock, TrendingUp, TrendingDown, Minus, DollarSign, AlertCircle } from "lucide-react";
+import { Lock, TrendingUp, TrendingDown, Minus, DollarSign, AlertCircle, Info } from "lucide-react";
 import { useHasActivePlan } from "@/hooks/use-has-active-plan";
 import { PriceInsightResult } from "@/services/priceInsightsService";
 import { cn } from "@/lib/utils";
+import { getRecommendationTexts, getDisclaimerText } from "@/lib/priceInsightsTexts";
 
 interface PriceRecommendationCardProps {
   insights: PriceInsightResult | null;
@@ -118,18 +119,23 @@ export function PriceRecommendationCard({
     currentPrice <= insights.recommended_max;
 
   const comparison = insights.price_comparison;
+  const recommendationTexts = getRecommendationTexts(insights, city, propertyType, hasActivePlan);
+  const disclaimer = getDisclaimerText(insights, hasActivePlan);
 
   return (
     <Card>
       <CardHeader>
         <CardTitle className="flex items-center gap-2 text-lg">
           <DollarSign className="w-5 h-5" />
-          Recomendación de Precio
+          {recommendationTexts.title}
         </CardTitle>
-        <CardDescription>
-          Basado en {insights.sample_size} inmueble{insights.sample_size !== 1 ? "s" : ""}{" "}
-          comparable{insights.sample_size !== 1 ? "s" : ""} en esta zona
-        </CardDescription>
+        <CardDescription>{recommendationTexts.description}</CardDescription>
+        {insights.source === "market" && (
+          <Badge variant="outline" className="w-fit mt-2 gap-1">
+            <Info className="w-3 h-3" />
+            Estimación externa
+          </Badge>
+        )}
       </CardHeader>
       <CardContent className="space-y-4">
         <div className="space-y-2">
@@ -178,6 +184,35 @@ export function PriceRecommendationCard({
               {comparison.percentage_diff > 0 ? "por encima" : "por debajo"} del promedio del
               mercado
             </p>
+          </div>
+        )}
+
+        {/* Disclaimer y fuentes de datos */}
+        {(disclaimer || recommendationTexts.disclaimer || insights.data_sources_attribution) && (
+          <div className="pt-4 border-t space-y-2">
+            {disclaimer && (
+              <div className="flex items-start gap-2 p-2 bg-muted/50 rounded-md">
+                <Info className="w-3 h-3 text-muted-foreground mt-0.5 flex-shrink-0" />
+                <p className="text-xs text-muted-foreground">{disclaimer}</p>
+              </div>
+            )}
+            {recommendationTexts.disclaimer && !disclaimer && (
+              <div className="flex items-start gap-2 p-2 bg-muted/50 rounded-md">
+                <Info className="w-3 h-3 text-muted-foreground mt-0.5 flex-shrink-0" />
+                <p className="text-xs text-muted-foreground">{recommendationTexts.disclaimer}</p>
+              </div>
+            )}
+            {insights.data_sources_attribution && (
+              <p className="text-xs text-muted-foreground text-center italic">
+                {insights.data_sources_attribution}
+              </p>
+            )}
+            {insights.dane_validation && insights.dane_validation.coherence_status !== "no_data" && (
+              <p className="text-xs text-muted-foreground text-center mt-1">
+                Referencia DANE: ${insights.dane_validation.reference_price?.toLocaleString() || "N/A"}
+                {insights.dane_validation.data_period && ` (${insights.dane_validation.data_period})`}
+              </p>
+            )}
           </div>
         )}
       </CardContent>

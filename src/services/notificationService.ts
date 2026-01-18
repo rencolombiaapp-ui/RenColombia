@@ -3,7 +3,18 @@ import { supabase } from "@/integrations/supabase/client";
 export interface Notification {
   id: string;
   user_id: string;
-  type: "property_intention" | "new_message" | "property_viewed" | "review_received" | "system";
+  type: 
+    | "property_intention" 
+    | "new_message" 
+    | "property_viewed" 
+    | "property_favorited"
+    | "review_received" 
+    | "contract_request"
+    | "contract_started"
+    | "contract_pending_approval"
+    | "contract_approved"
+    | "contract_cancelled"
+    | "system";
   title: string;
   message: string;
   related_id: string | null;
