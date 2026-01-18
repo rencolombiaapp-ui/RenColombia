@@ -13,15 +13,25 @@
 -- 1. VERIFICAR Y CORREGIR handle_new_user()
 -- ============================================
 -- Asegurar que la función tiene manejo de errores robusto
+-- IMPORTANTE: Establecer todos los campos necesarios con valores por defecto
 CREATE OR REPLACE FUNCTION public.handle_new_user()
 RETURNS trigger AS $$
 BEGIN
   -- Intentar insertar el perfil con manejo de errores
-  INSERT INTO public.profiles (id, email, full_name)
+  -- Establecer todos los campos necesarios con valores por defecto
+  INSERT INTO public.profiles (
+    id, 
+    email, 
+    full_name,
+    role,  -- Campo requerido con CHECK constraint
+    publisher_type  -- Puede ser NULL según migración 00021
+  )
   VALUES (
     new.id, 
     COALESCE(new.email, ''),
-    COALESCE(new.raw_user_meta_data->>'full_name', '')
+    COALESCE(new.raw_user_meta_data->>'full_name', ''),
+    'tenant',  -- Valor por defecto según schema inicial
+    NULL  -- NULL por defecto según migración 00021_fix_publisher_type_default.sql
   )
   ON CONFLICT (id) DO NOTHING; -- Evitar errores si el perfil ya existe
   RETURN new;
