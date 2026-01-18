@@ -38,7 +38,7 @@ const HowItWorks = () => {
             Proceso Simple
           </span>
           <h2 className="text-3xl md:text-4xl font-display font-bold text-foreground mt-3">
-            ¿Cómo funciona RenColombia?
+            ¿Cómo funciona RentarColombia?
           </h2>
           <p className="text-muted-foreground mt-4">
             Un proceso simple en 4 pasos para arrendar de forma digital y segura.

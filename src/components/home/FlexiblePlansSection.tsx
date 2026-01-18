@@ -18,7 +18,7 @@ const FlexiblePlansSection = () => {
                 Empieza gratis, crece cuando lo necesites
               </h2>
               <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-                Puedes usar RenColombia completamente gratis. Los planes PRO desbloquean contratación digital y análisis avanzados de precios.
+                Puedes usar RentarColombia completamente gratis. Los planes PRO desbloquean contratación digital y análisis avanzados de precios.
               </p>
             </div>
 

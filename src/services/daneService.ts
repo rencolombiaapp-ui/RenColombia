@@ -133,7 +133,7 @@ export async function getDaneReferenceData(
 /**
  * Valida la coherencia de un precio promedio calculado con datos del DANE
  * 
- * @param calculatedAverage - Precio promedio calculado desde datos de RenColombia
+ * @param calculatedAverage - Precio promedio calculado desde datos de RentarColombia
  * @param city - Ciudad del análisis
  * @param propertyType - Tipo de inmueble
  * @returns Resultado de validación con DANE
@@ -194,7 +194,7 @@ export async function validateWithDane(
  * Obtiene el texto de fuente de datos para mostrar en la UI
  */
 export function getDataSourcesText(hasDaneData: boolean): string[] {
-  const sources = ["RenColombia Marketplace Data"];
+  const sources = ["RentarColombia Marketplace Data"];
   if (hasDaneData) {
     sources.push("DANE – análisis agregado y elaboración propia");
   }
@@ -206,7 +206,7 @@ export function getDataSourcesText(hasDaneData: boolean): string[] {
  */
 export function getDataSourcesAttribution(hasDaneData: boolean): string {
   if (hasDaneData) {
-    return "Fuente: Datos del mercado RenColombia y DANE (análisis agregado y elaboración propia)";
+    return "Fuente: Datos del mercado RentarColombia y DANE (análisis agregado y elaboración propia)";
   }
-  return "Fuente: Datos del mercado RenColombia";
+  return "Fuente: Datos del mercado RentarColombia";
 }

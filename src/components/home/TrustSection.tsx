@@ -31,7 +31,7 @@ const TrustSection = () => {
           {/* Header */}
           <div className="text-center mb-12">
             <h2 className="text-3xl md:text-4xl font-display font-bold text-foreground mb-4">
-              Confía en RenColombia
+              Confía en RentarColombia
             </h2>
             <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
               Tu seguridad y privacidad son nuestra prioridad. Trabajamos constantemente para ofrecerte la mejor experiencia.

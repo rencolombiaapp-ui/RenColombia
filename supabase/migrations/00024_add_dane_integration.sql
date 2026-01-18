@@ -10,14 +10,14 @@ alter table public.price_insights
   add column if not exists dane_deviation_percentage decimal(5, 2),
   add column if not exists dane_coherence_status text check (dane_coherence_status in ('coherent', 'slight_deviation', 'significant_deviation', 'no_data')),
   add column if not exists dane_data_period text,
-  add column if not exists data_sources jsonb default '["RenColombia Marketplace Data"]'::jsonb;
+  add column if not exists data_sources jsonb default '["RentarColombia Marketplace Data"]'::jsonb;
 
 -- Comentarios para documentación
 comment on column public.price_insights.dane_reference_price is 'Precio de referencia del DANE para la ciudad/área metropolitana (solo para contexto macroeconómico)';
 comment on column public.price_insights.dane_deviation_percentage is 'Porcentaje de desviación del promedio calculado respecto al precio de referencia DANE';
 comment on column public.price_insights.dane_coherence_status is 'Estado de coherencia: coherent (dentro de rango esperado), slight_deviation (desviación menor al 20%), significant_deviation (desviación mayor al 20%), no_data (sin datos DANE disponibles)';
 comment on column public.price_insights.dane_data_period is 'Período de los datos DANE utilizados (ej: "2024-Q1", "2023-12")';
-comment on column public.price_insights.data_sources is 'Array JSON con las fuentes de datos utilizadas: ["RenColombia Marketplace Data", "DANE – análisis agregado y elaboración propia"]';
+comment on column public.price_insights.data_sources is 'Array JSON con las fuentes de datos utilizadas: ["RentarColombia Marketplace Data", "DANE – análisis agregado y elaboración propia"]';
 
 -- Índice para búsquedas por coherencia DANE
 create index if not exists price_insights_dane_coherence_idx on public.price_insights(dane_coherence_status);
@@ -64,6 +64,7 @@ create index if not exists dane_reference_data_expires_at_idx on public.dane_ref
 alter table public.dane_reference_data enable row level security;
 
 -- Cualquiera puede leer los datos de referencia DANE (público)
+drop policy if exists "Cualquiera puede leer datos de referencia DANE" on public.dane_reference_data;
 create policy "Cualquiera puede leer datos de referencia DANE"
   on public.dane_reference_data for select
   using (true);

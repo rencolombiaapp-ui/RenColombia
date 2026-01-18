@@ -192,7 +192,7 @@ const ReportProblem = () => {
                     Reportar un problema
                   </h1>
                   <p className="text-muted-foreground mt-2">
-                    Ayúdanos a mejorar RenColombia reportando problemas o compartiendo sugerencias
+                    Ayúdanos a mejorar RentarColombia reportando problemas o compartiendo sugerencias
                   </p>
                 </div>
               </div>

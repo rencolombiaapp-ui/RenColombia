@@ -115,6 +115,7 @@ $$ LANGUAGE plpgsql;
 COMMENT ON FUNCTION public.update_rental_contract_updated_at() IS 
   'Trigger function que actualiza updated_at automáticamente en rental_contracts';
 
+DROP TRIGGER IF EXISTS update_rental_contract_updated_at_trigger ON public.rental_contracts;
 CREATE TRIGGER update_rental_contract_updated_at_trigger
   BEFORE UPDATE ON public.rental_contracts
   FOR EACH ROW
@@ -273,7 +274,7 @@ BEGIN
 
 ## Cláusulas
 
-Este contrato es una plantilla generada automáticamente por RenColombia y no sustituye asesoría legal profesional.
+Este contrato es una plantilla generada automáticamente por RentarColombia y no sustituye asesoría legal profesional.
 
 [Contenido adicional del contrato...]
 ',
@@ -356,21 +357,25 @@ COMMENT ON FUNCTION public.start_contract IS
 ALTER TABLE public.rental_contracts ENABLE ROW LEVEL SECURITY;
 
 -- Policy: Participantes pueden ver sus contratos
+DROP POLICY IF EXISTS "Participantes pueden ver sus contratos" ON public.rental_contracts;
 CREATE POLICY "Participantes pueden ver sus contratos"
   ON public.rental_contracts FOR SELECT
   USING (tenant_id = auth.uid() OR owner_id = auth.uid());
 
 -- Policy: Solo propietarios pueden crear contratos (validado en RPC)
+DROP POLICY IF EXISTS "Propietarios pueden crear contratos" ON public.rental_contracts;
 CREATE POLICY "Propietarios pueden crear contratos"
   ON public.rental_contracts FOR INSERT
   WITH CHECK (owner_id = auth.uid());
 
 -- Policy: Participantes pueden actualizar contratos según estado
+DROP POLICY IF EXISTS "Propietarios pueden actualizar contratos en draft" ON public.rental_contracts;
 CREATE POLICY "Propietarios pueden actualizar contratos en draft"
   ON public.rental_contracts FOR UPDATE
   USING (owner_id = auth.uid() AND status = 'draft')
   WITH CHECK (owner_id = auth.uid());
 
+DROP POLICY IF EXISTS "Inquilinos pueden actualizar contratos pendientes" ON public.rental_contracts;
 CREATE POLICY "Inquilinos pueden actualizar contratos pendientes"
   ON public.rental_contracts FOR UPDATE
   USING (
@@ -380,6 +385,7 @@ CREATE POLICY "Inquilinos pueden actualizar contratos pendientes"
   WITH CHECK (tenant_id = auth.uid());
 
 -- Policy: Solo propietarios pueden eliminar contratos en draft
+DROP POLICY IF EXISTS "Propietarios pueden eliminar contratos en draft" ON public.rental_contracts;
 CREATE POLICY "Propietarios pueden eliminar contratos en draft"
   ON public.rental_contracts FOR DELETE
   USING (owner_id = auth.uid() AND status = 'draft');

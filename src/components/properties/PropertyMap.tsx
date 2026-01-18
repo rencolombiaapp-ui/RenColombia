@@ -51,7 +51,7 @@ const PropertyMap = ({
         `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}&zoom=10&addressdetails=1`,
         {
           headers: {
-            "User-Agent": "RenColombia/1.0",
+            "User-Agent": "RentarColombia/1.0",
           },
         }
       );
@@ -165,7 +165,7 @@ const PropertyMap = ({
         `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&limit=5&countrycodes=co&addressdetails=1`,
         {
           headers: {
-            "User-Agent": "RenColombia/1.0", // Requerido por Nominatim
+            "User-Agent": "RentarColombia/1.0", // Requerido por Nominatim
           },
         }
       );
@@ -286,11 +286,11 @@ const PropertyMap = ({
         <MapPin className="w-5 h-5 text-muted-foreground" />
         <h2 className="text-lg font-semibold text-foreground">Ubicación aproximada del inmueble</h2>
       </div>
-      <div className="h-[350px] rounded-xl overflow-hidden border border-border">
+      <div className="h-[350px] rounded-xl overflow-hidden border border-border z-0 relative" style={{ zIndex: 0 }}>
         <MapContainer
           center={[latitude, longitude]}
           zoom={14}
-          style={{ height: "100%", width: "100%" }}
+          style={{ height: "100%", width: "100%", zIndex: 0, position: "relative" }}
           scrollWheelZoom={true}
           ref={mapRef}
         >
@@ -308,6 +308,36 @@ const PropertyMap = ({
             </Popup>
           </Marker>
         </MapContainer>
+        {/* Estilos para asegurar que Leaflet no sobresalga sobre modales */}
+        <style>{`
+          .leaflet-container {
+            z-index: 0 !important;
+          }
+          .leaflet-pane {
+            z-index: 0 !important;
+          }
+          .leaflet-map-pane {
+            z-index: 0 !important;
+          }
+          .leaflet-tile-pane {
+            z-index: 0 !important;
+          }
+          .leaflet-overlay-pane {
+            z-index: 1 !important;
+          }
+          .leaflet-shadow-pane {
+            z-index: 0 !important;
+          }
+          .leaflet-marker-pane {
+            z-index: 2 !important;
+          }
+          .leaflet-tooltip-pane {
+            z-index: 3 !important;
+          }
+          .leaflet-popup-pane {
+            z-index: 4 !important;
+          }
+        `}</style>
       </div>
     </div>
   );

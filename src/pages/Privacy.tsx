@@ -44,7 +44,7 @@ const Privacy = () => {
               <section>
                 <h2 className="text-xl font-semibold text-foreground mb-3">1. Introducción</h2>
                 <p className="text-muted-foreground leading-relaxed">
-                  En RenColombia respetamos tu privacidad y nos comprometemos a proteger tus datos personales.
+                  En RentarColombia respetamos tu privacidad y nos comprometemos a proteger tus datos personales.
                   Esta política explica qué información recopilamos, cómo la usamos y cómo la protegemos.
                 </p>
               </section>
@@ -53,7 +53,7 @@ const Privacy = () => {
               <section>
                 <h2 className="text-xl font-semibold text-foreground mb-3">2. Información que Recolectamos</h2>
                 <p className="text-muted-foreground leading-relaxed mb-3">
-                  Recolectamos la siguiente información cuando usas RenColombia:
+                  Recolectamos la siguiente información cuando usas RentarColombia:
                 </p>
                 <ul className="list-disc list-inside space-y-2 text-muted-foreground ml-4">
                   <li><strong>Información de cuenta:</strong> nombre, email, teléfono (opcional)</li>
@@ -146,8 +146,8 @@ const Privacy = () => {
                 <p className="text-muted-foreground leading-relaxed">
                   Si tienes preguntas sobre esta política de privacidad o sobre cómo manejamos tus datos, puedes
                   contactarnos en{" "}
-                  <a href="mailto:info@rencolombia.com" className="text-primary hover:underline">
-                    info@rencolombia.com
+                  <a href="mailto:info@rentarcolombia.com" className="text-primary hover:underline">
+                    info@rentarcolombia.com
                   </a>
                 </p>
               </section>

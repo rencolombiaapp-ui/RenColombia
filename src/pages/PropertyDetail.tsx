@@ -11,6 +11,7 @@ import { useProfile } from "@/hooks/use-profile";
 import { useCreateIntention, useHasIntention } from "@/hooks/use-intentions";
 import { useActivePlan } from "@/hooks/use-has-active-plan";
 import { useIsContractParticipant } from "@/hooks/use-contracts";
+import { supabase } from "@/integrations/supabase/client";
 import Navbar from "@/components/layout/Navbar";
 import ReviewModal from "@/components/reviews/ReviewModal";
 import Footer from "@/components/layout/Footer";
@@ -30,6 +31,10 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import {
+  Alert,
+  AlertDescription,
+} from "@/components/ui/alert";
 import {
   Heart,
   MapPin,
@@ -56,6 +61,7 @@ import {
   CheckCircle,
   HandHeart,
   FileText,
+  AlertCircle,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -280,6 +286,11 @@ const PropertyDetail = () => {
   };
 
   const handleShowContact = () => {
+    // Requerir autenticación para ver información de contacto
+    if (!user) {
+      navigate("/auth?mode=login&redirect=" + encodeURIComponent(window.location.pathname));
+      return;
+    }
     setInterestDialogOpen(false);
     setContactDialogOpen(true);
   };
@@ -464,16 +475,18 @@ const PropertyDetail = () => {
 
               {/* Mapa de Ubicación - Ocultar cuando cualquier modal está abierto */}
               {!tour360DialogOpen && !viewRequirementsModalOpen && !contactDialogOpen && !messageDialogOpen && !interestDialogOpen && !showReviewModal && !contractRequestModalOpen && (
-                <PropertyMap
-                  propertyId={property.id}
-                  latitude={property.latitude}
-                  longitude={property.longitude}
-                  address={property.address}
-                  city={property.city}
-                  municipio={property.municipio}
-                  neighborhood={property.neighborhood}
-                  departamento={property.departamento}
-                />
+                <div className="relative z-0">
+                  <PropertyMap
+                    propertyId={property.id}
+                    latitude={property.latitude}
+                    longitude={property.longitude}
+                    address={property.address}
+                    city={property.city}
+                    municipio={property.municipio}
+                    neighborhood={property.neighborhood}
+                    departamento={property.departamento}
+                  />
+                </div>
               )}
             </div>
 
@@ -726,10 +739,19 @@ const PropertyDetail = () => {
                           ? property.profiles.company_name || "Inmobiliaria"
                           : property.profiles.full_name || property.profiles.email?.split("@")[0] || "Usuario"}
                       </p>
-                      {property.profiles.phone && (
+                      {/* Solo mostrar teléfono a usuarios autenticados */}
+                      {user && property.profiles.phone && (
                         <p className="text-sm text-muted-foreground flex items-center gap-1">
                           <Phone className="w-3 h-3" />
                           {property.profiles.phone}
+                        </p>
+                      )}
+                      {!user && (
+                        <p className="text-sm text-muted-foreground">
+                          <Link to="/auth" className="text-primary hover:underline font-medium">
+                            Inicia sesión
+                          </Link>{" "}
+                          para ver información de contacto
                         </p>
                       )}
                     </div>
@@ -1008,7 +1030,7 @@ const PropertyDetail = () => {
         </DialogContent>
       </Dialog>
 
-      {/* Modal: Información de Contacto */}
+      {/* Modal: Información de Contacto - Solo para usuarios autenticados */}
       <Dialog open={contactDialogOpen} onOpenChange={setContactDialogOpen}>
         <DialogContent className="z-[1000]">
           <DialogHeader>
@@ -1017,7 +1039,34 @@ const PropertyDetail = () => {
               Datos de contacto del publicador
             </DialogDescription>
           </DialogHeader>
-          {property.profiles && (
+          {!user ? (
+            <div className="space-y-4 py-4">
+              <p className="text-sm text-muted-foreground text-center">
+                Debes iniciar sesión para ver la información de contacto.
+              </p>
+              <div className="flex gap-3">
+                <Button
+                  variant="outline"
+                  className="flex-1"
+                  onClick={() => {
+                    setContactDialogOpen(false);
+                    navigate("/auth?mode=login&redirect=" + encodeURIComponent(window.location.pathname));
+                  }}
+                >
+                  Iniciar sesión
+                </Button>
+                <Button
+                  className="flex-1"
+                  onClick={() => {
+                    setContactDialogOpen(false);
+                    navigate("/auth?mode=register&redirect=" + encodeURIComponent(window.location.pathname));
+                  }}
+                >
+                  Crear cuenta
+                </Button>
+              </div>
+            </div>
+          ) : property.profiles && (
             <div className="space-y-4">
               <div className="flex items-center gap-4">
                 {property.profiles.publisher_type === "inmobiliaria" && property.profiles.company_logo ? (

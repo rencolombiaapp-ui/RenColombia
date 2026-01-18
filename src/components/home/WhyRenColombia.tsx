@@ -34,10 +34,10 @@ const WhyRenColombia = () => {
             Diferenciales
           </span>
           <h2 className="text-3xl md:text-4xl font-display font-bold text-foreground mt-3">
-            ¿Por qué RenColombia?
+            ¿Por qué RentarColombia?
           </h2>
           <p className="text-muted-foreground mt-4">
-            No somos solo un portal de búsqueda. Somos una plataforma completa para arrendar de forma simple, segura y digital.
+            No somos solo un portal de búsqueda. Somos una plataforma digital completa para arrendar, contratar y pagar inmuebles con mayor seguridad y procesos legales claros.
           </p>
         </div>
 

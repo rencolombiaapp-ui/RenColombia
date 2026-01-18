@@ -40,11 +40,11 @@ const Footer = () => {
                 <Home className="w-5 h-5 text-primary-foreground" />
               </div>
               <span className="text-xl font-display font-bold text-white">
-                Ren<span className="text-accent">Colombia</span>
+                Rentar<span className="text-accent">Colombia</span>
               </span>
             </Link>
             <p className="text-white/70 text-sm leading-relaxed">
-              La plataforma líder de arrendamiento en Colombia. Conectamos propietarios e inquilinos de manera segura y confiable.
+              La plataforma digital para arrendar, contratar y pagar inmuebles en Colombia. Contratos digitales, verificación y mayor seguridad.
             </p>
             <div className="flex gap-3">
               <a href="#" className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center hover:bg-primary transition-colors">
@@ -131,8 +131,8 @@ const Footer = () => {
               </li>
               <li className="flex items-center gap-3 text-white/70 text-sm">
                 <Mail className="w-4 h-4 text-accent flex-shrink-0" />
-                <a href="mailto:info@rencolombia.com" className="hover:text-accent transition-colors">
-                  info@rencolombia.com
+                <a href="mailto:info@rentarcolombia.com" className="hover:text-accent transition-colors">
+                  info@rentarcolombia.com
                 </a>
               </li>
               <li className="flex items-center gap-3 text-white/70 text-sm">

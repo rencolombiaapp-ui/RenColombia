@@ -343,7 +343,7 @@ const ContractRequestsModal = ({
             <Alert variant="default" className="border-yellow-500 bg-yellow-50 dark:bg-yellow-950">
               <AlertCircle className="h-4 w-4 text-yellow-600" />
               <AlertDescription className="text-sm">
-                <strong>⚠️ Disclaimer Legal:</strong> Este contrato es una plantilla generada automáticamente por RenColombia y no sustituye asesoría legal profesional. Recomendamos consultar con un abogado antes de iniciar el contrato.
+                <strong>⚠️ Disclaimer Legal:</strong> Este contrato es una plantilla generada automáticamente por RentarColombia y no sustituye asesoría legal profesional. Recomendamos consultar con un abogado antes de iniciar el contrato.
               </AlertDescription>
             </Alert>
 

@@ -13,16 +13,16 @@ import {
 const Help = () => {
   const faqs = [
     {
-      question: "¿Qué es RenColombia?",
-      answer: "RenColombia es una plataforma digital que conecta propietarios e inquilinos en Colombia. Facilitamos la publicación y búsqueda de inmuebles para arrendamiento, permitiendo que propietarios publiquen sus propiedades de forma gratuita y que inquilinos encuentren su próximo hogar.",
+      question: "¿Qué es RentarColombia?",
+      answer: "RentarColombia es una plataforma digital que conecta propietarios e inquilinos en Colombia. Facilitamos la publicación y búsqueda de inmuebles para arrendamiento, permitiendo que propietarios publiquen sus propiedades de forma gratuita y que inquilinos encuentren su próximo hogar.",
     },
     {
       question: "¿Cómo publicar un inmueble?",
-      answer: "Para publicar un inmueble, primero debes crear una cuenta en RenColombia. Luego, ve a 'Publicar' en el menú, completa la información del inmueble (título, tipo, ciudad, precio, descripción), sube fotos y haz clic en 'Publicar Inmueble'. Tu inmueble estará visible inmediatamente para todos los usuarios.",
+      answer: "Para publicar un inmueble, primero debes crear una cuenta en RentarColombia. Luego, ve a 'Publicar' en el menú, completa la información del inmueble (título, tipo, ciudad, precio, descripción), sube fotos y haz clic en 'Publicar Inmueble'. Tu inmueble estará visible inmediatamente para todos los usuarios.",
     },
     {
       question: "¿Tiene costo publicar un inmueble?",
-      answer: "No, publicar inmuebles en RenColombia es completamente gratuito. No cobramos por publicar, ni por gestionar tus propiedades. Próximamente ofreceremos opciones opcionales de visibilidad y planes para inmobiliarias, pero la publicación básica siempre será gratuita.",
+      answer: "No, publicar inmuebles en RentarColombia es completamente gratuito. No cobramos por publicar, ni por gestionar tus propiedades. Próximamente ofreceremos opciones opcionales de visibilidad y planes para inmobiliarias, pero la publicación básica siempre será gratuita.",
     },
     {
       question: "¿Cómo contactar a un propietario?",
@@ -73,7 +73,7 @@ const Help = () => {
                     Centro de Ayuda
                   </h1>
                   <p className="text-muted-foreground mt-2">
-                    Encuentra respuestas a las preguntas más frecuentes sobre RenColombia
+                    Encuentra respuestas a las preguntas más frecuentes sobre RentarColombia
                   </p>
                 </div>
               </div>
@@ -158,8 +158,8 @@ const Help = () => {
                   <div className="space-y-2 mb-4">
                     <p className="text-sm text-muted-foreground">
                       <strong>Email:</strong>{" "}
-                      <a href="mailto:info@rencolombia.com" className="text-primary hover:underline">
-                        info@rencolombia.com
+                      <a href="mailto:info@rentarcolombia.com" className="text-primary hover:underline">
+                        info@rentarcolombia.com
                       </a>
                     </p>
                     <p className="text-sm text-muted-foreground">

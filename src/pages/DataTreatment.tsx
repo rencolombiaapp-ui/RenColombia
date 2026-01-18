@@ -44,10 +44,10 @@ const DataTreatment = () => {
               <section>
                 <h2 className="text-xl font-semibold text-foreground mb-3">1. Responsable del Tratamiento</h2>
                 <p className="text-muted-foreground leading-relaxed">
-                  <strong>RenColombia</strong> es responsable del tratamiento de tus datos personales.
+                  <strong>RentarColombia</strong> es responsable del tratamiento de tus datos personales.
                   Nuestro domicilio está en Bogotá, Colombia. Puedes contactarnos en{" "}
-                  <a href="mailto:info@rencolombia.com" className="text-primary hover:underline">
-                    info@rencolombia.com
+                  <a href="mailto:info@rentarcolombia.com" className="text-primary hover:underline">
+                    info@rentarcolombia.com
                   </a>
                 </p>
               </section>
@@ -72,7 +72,7 @@ const DataTreatment = () => {
               <section>
                 <h2 className="text-xl font-semibold text-foreground mb-3">3. Consentimiento</h2>
                 <p className="text-muted-foreground leading-relaxed">
-                  Al registrarte y usar RenColombia, otorgas tu consentimiento libre, previo, expreso e informado
+                  Al registrarte y usar RentarColombia, otorgas tu consentimiento libre, previo, expreso e informado
                   para el tratamiento de tus datos personales conforme a esta política. Puedes revocar tu consentimiento
                   en cualquier momento contactándonos, aunque esto puede afectar el uso de algunos servicios.
                 </p>
@@ -99,7 +99,7 @@ const DataTreatment = () => {
               <section>
                 <h2 className="text-xl font-semibold text-foreground mb-3">5. Datos Sensibles</h2>
                 <p className="text-muted-foreground leading-relaxed">
-                  RenColombia no solicita ni procesa datos sensibles (raza, origen étnico, orientación política,
+                  RentarColombia no solicita ni procesa datos sensibles (raza, origen étnico, orientación política,
                   convicciones religiosas o filosóficas, afiliación sindical, datos biométricos, datos sobre salud
                   o vida sexual). Si necesitamos procesar este tipo de datos en el futuro, solicitaremos tu
                   consentimiento explícito.
@@ -130,7 +130,7 @@ const DataTreatment = () => {
               <section>
                 <h2 className="text-xl font-semibold text-foreground mb-3">8. Vigencia</h2>
                 <p className="text-muted-foreground leading-relaxed">
-                  Conservaremos tus datos personales mientras mantengas una cuenta activa en RenColombia y durante
+                  Conservaremos tus datos personales mientras mantengas una cuenta activa en RentarColombia y durante
                   el tiempo necesario para cumplir con obligaciones legales. Cuando solicites la eliminación de tu
                   cuenta, eliminaremos tus datos personales, excepto aquellos que debamos conservar por obligación legal.
                 </p>
@@ -142,8 +142,8 @@ const DataTreatment = () => {
                 <p className="text-muted-foreground leading-relaxed">
                   Para ejercer tus derechos o hacer consultas sobre el tratamiento de tus datos personales, puedes
                   contactarnos en{" "}
-                  <a href="mailto:info@rencolombia.com" className="text-primary hover:underline">
-                    info@rencolombia.com
+                  <a href="mailto:info@rentarcolombia.com" className="text-primary hover:underline">
+                    info@rentarcolombia.com
                   </a>
                 </p>
               </section>

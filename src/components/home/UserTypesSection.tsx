@@ -58,7 +58,7 @@ const UserTypesSection = () => {
             Una plataforma para todos
           </h2>
           <p className="text-muted-foreground mt-4">
-            RenColombia se adapta a tus necesidades, ya seas inquilino, propietario o inmobiliaria.
+            RentarColombia se adapta a tus necesidades, ya seas inquilino, propietario o inmobiliaria.
           </p>
         </div>
 

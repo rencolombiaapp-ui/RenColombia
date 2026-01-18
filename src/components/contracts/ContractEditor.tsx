@@ -647,7 +647,7 @@ const ContractEditor = ({
       <Alert variant="default" className="border-yellow-500 bg-yellow-50 dark:bg-yellow-950">
         <AlertCircle className="h-4 w-4 text-yellow-600" />
         <AlertDescription className="text-sm">
-          <strong>⚠️ Disclaimer Legal:</strong> Este contrato es una plantilla generada automáticamente por RenColombia y no sustituye asesoría legal profesional. Recomendamos consultar con un abogado antes de enviar el contrato al inquilino.
+          <strong>⚠️ Disclaimer Legal:</strong> Este contrato es una plantilla generada automáticamente por RentarColombia y no sustituye asesoría legal profesional. Recomendamos consultar con un abogado antes de enviar el contrato al inquilino.
         </AlertDescription>
       </Alert>
 
@@ -797,7 +797,7 @@ const ContractEditor = ({
             <Alert variant="default" className="border-yellow-500 bg-yellow-50 dark:bg-yellow-950">
               <AlertCircle className="h-4 w-4 text-yellow-600" />
               <AlertDescription className="text-sm">
-                Este contrato es una plantilla generada automáticamente por RenColombia y no sustituye asesoría legal profesional. Recomendamos consultar con un abogado antes de enviar el contrato.
+                Este contrato es una plantilla generada automáticamente por RentarColombia y no sustituye asesoría legal profesional. Recomendamos consultar con un abogado antes de enviar el contrato.
               </AlertDescription>
             </Alert>
             <div className="mt-4 flex items-start space-x-2">

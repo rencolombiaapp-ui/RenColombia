@@ -205,7 +205,7 @@ El presente contrato podrá terminar:
 
 ## DISCLAIMER LEGAL
 
-**IMPORTANTE:** Este contrato es una plantilla generada automáticamente por RenColombia y no sustituye asesoría legal profesional. Se recomienda consultar con un abogado antes de firmar.
+**IMPORTANTE:** Este contrato es una plantilla generada automáticamente por RentarColombia y no sustituye asesoría legal profesional. Se recomienda consultar con un abogado antes de firmar.
 
 ---
 

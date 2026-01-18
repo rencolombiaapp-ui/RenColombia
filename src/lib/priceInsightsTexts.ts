@@ -98,7 +98,7 @@ function getMarketSourceTexts(
       ? `Basado en análisis por área específica (${sampleSize} inmuebles)`
       : `Basado en análisis a nivel de ciudad (${sampleSize} inmuebles en ${city})`,
     sourceBadge: "Datos externos",
-    sourceTooltip: "Estos datos provienen de fuentes externas de análisis de mercado. Los datos propios de RenColombia son insuficientes en esta zona.",
+    sourceTooltip: "Estos datos provienen de fuentes externas de análisis de mercado. Los datos propios de RentarColombia son insuficientes en esta zona.",
     disclaimer: analysisLevel === "neighborhood"
       ? "Estimación a nivel de barrio basada en datos agregados. Considera características específicas de tu inmueble."
       : analysisLevel === "area"
@@ -108,7 +108,7 @@ function getMarketSourceTexts(
 }
 
 /**
- * Textos cuando los datos vienen de RenColombia (propios)
+ * Textos cuando los datos vienen de RentarColombia (propios)
  */
 function getOwnSourceTexts(
   insights: PriceInsightResult,
@@ -146,8 +146,8 @@ function getOwnSourceTexts(
     sampleSizeText: neighborhood
       ? `Basado en ${sampleSize} inmueble${sampleSize !== 1 ? "s" : ""} comparable${sampleSize !== 1 ? "s" : ""} en ${neighborhood}`
       : `Basado en ${sampleSize} inmueble${sampleSize !== 1 ? "s" : ""} comparable${sampleSize !== 1 ? "s" : ""} en ${city || "esta zona"}`,
-    sourceBadge: "Datos RenColombia",
-    sourceTooltip: "Análisis calculado con datos reales de propiedades publicadas en RenColombia",
+    sourceBadge: "Datos RentarColombia",
+    sourceTooltip: "Análisis calculado con datos reales de propiedades publicadas en RentarColombia",
     disclaimer: sampleSize < 10
       ? "Análisis basado en muestra limitada. Considera características específicas de tu inmueble."
       : undefined,

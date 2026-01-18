@@ -44,7 +44,7 @@ const Terms = () => {
               <section>
                 <h2 className="text-xl font-semibold text-foreground mb-3">1. Introducción</h2>
                 <p className="text-muted-foreground leading-relaxed">
-                  Bienvenido a RenColombia. Al acceder y utilizar nuestra plataforma, aceptas estos términos y condiciones.
+                  Bienvenido a RentarColombia. Al acceder y utilizar nuestra plataforma, aceptas estos términos y condiciones.
                   Si no estás de acuerdo con alguna parte de estos términos, no debes usar nuestros servicios.
                 </p>
               </section>
@@ -53,7 +53,7 @@ const Terms = () => {
               <section>
                 <h2 className="text-xl font-semibold text-foreground mb-3">2. Uso de la Plataforma</h2>
                 <p className="text-muted-foreground leading-relaxed mb-3">
-                  RenColombia es una plataforma que conecta propietarios e inquilinos para facilitar el arrendamiento de inmuebles.
+                  RentarColombia es una plataforma digital que conecta propietarios e inquilinos para facilitar el arrendamiento de inmuebles con contratos digitales, verificación y procesos seguros.
                 </p>
                 <ul className="list-disc list-inside space-y-2 text-muted-foreground ml-4">
                   <li>Debes ser mayor de edad para usar nuestros servicios</li>
@@ -67,14 +67,14 @@ const Terms = () => {
               <section>
                 <h2 className="text-xl font-semibold text-foreground mb-3">3. Publicación de Inmuebles</h2>
                 <p className="text-muted-foreground leading-relaxed mb-3">
-                  Al publicar un inmueble en RenColombia, aceptas que:
+                  Al publicar un inmueble en RentarColombia, aceptas que:
                 </p>
                 <ul className="list-disc list-inside space-y-2 text-muted-foreground ml-4">
                   <li>Tienes derecho legal sobre el inmueble que publicas</li>
                   <li>La información proporcionada es precisa y actualizada</li>
                   <li>Las imágenes corresponden al inmueble publicado</li>
                   <li>Eres responsable de las negociaciones y acuerdos con los inquilinos</li>
-                  <li>RenColombia no es parte de ningún contrato de arrendamiento</li>
+                  <li>RentarColombia no es parte de ningún contrato de arrendamiento</li>
                 </ul>
               </section>
 
@@ -82,7 +82,7 @@ const Terms = () => {
               <section>
                 <h2 className="text-xl font-semibold text-foreground mb-3">4. Responsabilidad del Usuario</h2>
                 <p className="text-muted-foreground leading-relaxed">
-                  Eres responsable de todas las actividades que ocurran bajo tu cuenta. RenColombia no se hace responsable
+                  Eres responsable de todas las actividades que ocurran bajo tu cuenta. RentarColombia no se hace responsable
                   por el contenido publicado por los usuarios, las negociaciones entre propietarios e inquilinos, ni por
                   los acuerdos que se establezcan fuera de la plataforma.
                 </p>
@@ -92,7 +92,7 @@ const Terms = () => {
               <section>
                 <h2 className="text-xl font-semibold text-foreground mb-3">5. Limitación de Responsabilidad</h2>
                 <p className="text-muted-foreground leading-relaxed">
-                  RenColombia actúa como intermediario entre propietarios e inquilinos. No garantizamos la disponibilidad
+                  RentarColombia actúa como intermediario entre propietarios e inquilinos. No garantizamos la disponibilidad
                   de los inmuebles, la veracidad de la información publicada por terceros, ni el resultado de las negociaciones.
                   El uso de la plataforma es bajo tu propio riesgo.
                 </p>
@@ -102,7 +102,7 @@ const Terms = () => {
               <section>
                 <h2 className="text-xl font-semibold text-foreground mb-3">6. Modificaciones del Servicio</h2>
                 <p className="text-muted-foreground leading-relaxed">
-                  RenColombia se reserva el derecho de modificar, suspender o discontinuar cualquier aspecto del servicio
+                  RentarColombia se reserva el derecho de modificar, suspender o discontinuar cualquier aspecto del servicio
                   en cualquier momento, con o sin previo aviso. Nos esforzamos por mantener la plataforma funcionando
                   correctamente, pero no garantizamos disponibilidad continua.
                 </p>
@@ -112,7 +112,7 @@ const Terms = () => {
               <section>
                 <h2 className="text-xl font-semibold text-foreground mb-3">7. Propiedad Intelectual</h2>
                 <p className="text-muted-foreground leading-relaxed">
-                  Todo el contenido de RenColombia, incluyendo diseño, logos y textos, es propiedad de RenColombia.
+                  Todo el contenido de RentarColombia, incluyendo diseño, logos y textos, es propiedad de RentarColombia.
                   El contenido que publiques (textos, imágenes) sigue siendo tuyo, pero nos otorgas licencia para
                   mostrarlo en la plataforma.
                 </p>
@@ -123,8 +123,8 @@ const Terms = () => {
                 <h2 className="text-xl font-semibold text-foreground mb-3">8. Contacto</h2>
                 <p className="text-muted-foreground leading-relaxed">
                   Si tienes preguntas sobre estos términos y condiciones, puedes contactarnos a través de
-                  <a href="mailto:info@rencolombia.com" className="text-primary hover:underline ml-1">
-                    info@rencolombia.com
+                  <a href="mailto:info@rentarcolombia.com" className="text-primary hover:underline ml-1">
+                    info@rentarcolombia.com
                   </a>
                 </p>
               </section>

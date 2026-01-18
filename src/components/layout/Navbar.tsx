@@ -82,7 +82,7 @@ const Navbar = () => {
               "text-xl font-display font-bold transition-colors",
               shouldShowBackground ? "text-foreground" : "text-white"
             )}>
-              Ren<span className="text-accent">Colombia</span>
+              Rentar<span className="text-accent">Colombia</span>
             </span>
           </Link>
 

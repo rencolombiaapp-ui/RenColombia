@@ -15,7 +15,7 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 // Singleton para prevenir múltiples listeners con HMR
 // Usar window para persistir a través de hot reloads
-const AUTH_SUBSCRIPTION_KEY = '__RENCOLOMBIA_AUTH_SUBSCRIPTION__';
+const AUTH_SUBSCRIPTION_KEY = '__RENTARCOLOMBIA_AUTH_SUBSCRIPTION__';
 
 function getAuthSubscription() {
   if (typeof window !== 'undefined') {

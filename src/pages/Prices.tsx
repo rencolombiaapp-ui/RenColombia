@@ -25,10 +25,10 @@ const Prices = () => {
             {/* Header */}
             <div className="text-center mb-12">
               <h1 className="text-3xl md:text-4xl font-display font-bold text-foreground mb-4">
-                Precios de RenColombia
+                Precios de RentarColombia
               </h1>
               <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-                RenColombia se encuentra en fase inicial. Publicar inmuebles es gratuito.
+                RentarColombia se encuentra en fase inicial. Publicar inmuebles es gratuito.
                 Próximamente ofreceremos opciones de visibilidad y planes para inmobiliarias.
               </p>
             </div>
@@ -143,7 +143,7 @@ const Prices = () => {
                     No cobramos por publicar en esta etapa
                   </h3>
                   <p className="text-muted-foreground">
-                    RenColombia está en fase inicial y queremos que todos puedan publicar sus inmuebles sin costo.
+                    RentarColombia está en fase inicial y queremos que todos puedan publicar sus inmuebles sin costo.
                     Cuando implementemos opciones de visibilidad y planes para inmobiliarias, serán completamente opcionales.
                     Tu publicación siempre será gratuita.
                   </p>

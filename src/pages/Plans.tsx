@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
@@ -23,8 +23,16 @@ import { useAuth } from "@/lib/auth";
 import { useProfile } from "@/hooks/use-profile";
 import { useActivePlan } from "@/hooks/use-has-active-plan";
 import { getPlansForUserType, Plan } from "@/services/subscriptionService";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
+import {
+  registerProPlanInterest,
+  hasProPlanInterest,
+  getUserProPlanInterests,
+  determineUserRole,
+  getPlanTypeFromRole,
+  type ProPlanType,
+} from "@/services/proPlanInterestService";
 
 const Plans = () => {
   const { user } = useAuth();
@@ -32,6 +40,7 @@ const Plans = () => {
   const { data: activePlan } = useActivePlan();
   const { toast } = useToast();
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
 
   // Determinar tipo de usuario (con fallback seguro)
   const userType: "tenant" | "landlord" | "inmobiliaria" = 
@@ -50,7 +59,62 @@ const Plans = () => {
     staleTime: 5 * 60 * 1000, // Cache por 5 minutos
   });
 
-  const handleSelectPlan = (planId: string) => {
+  // Obtener intereses registrados del usuario (solo si está autenticado)
+  const { data: userInterests = [] } = useQuery({
+    queryKey: ["pro-plan-interests", user?.id],
+    queryFn: getUserProPlanInterests,
+    enabled: !!user,
+    staleTime: 5 * 60 * 1000,
+  });
+
+  // Crear un Set de plan_types en los que el usuario ya registró interés
+  const registeredInterests = new Set(
+    userInterests.map((interest) => interest.plan_type)
+  );
+
+  // Mutation para registrar interés en plan PRO
+  const registerInterestMutation = useMutation({
+    mutationFn: async ({ planType, role }: { planType: ProPlanType; role: "tenant" | "landlord" | "inmobiliaria" }) => {
+      return await registerProPlanInterest(planType, role, "pricing_page");
+    },
+    onSuccess: (data) => {
+      // Refrescar la lista de intereses
+      queryClient.invalidateQueries({ queryKey: ["pro-plan-interests", user?.id] });
+      
+      if (data) {
+        toast({
+          title: "✅ Interés registrado",
+          description: "Hemos registrado tu interés. Te avisaremos cuando el Plan PRO esté disponible.",
+        });
+      } else {
+        toast({
+          title: "Ya tenemos registrado tu interés",
+          description: "Ya habías registrado tu interés en este plan anteriormente.",
+        });
+      }
+    },
+    onError: (error: any) => {
+      console.error("Error registrando interés:", error);
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: error.message || "No se pudo registrar tu interés. Por favor intenta de nuevo.",
+      });
+    },
+  });
+
+  const handleSelectPlan = async (planId: string) => {
+    // Si el usuario NO está autenticado y es un plan PRO
+    if (!user && (planId === "tenant_pro" || planId === "landlord_pro" || planId === "inmobiliaria_pro")) {
+      toast({
+        title: "Regístrate o inicia sesión",
+        description: "Regístrate o inicia sesión para continuar",
+      });
+      navigate("/auth?mode=register&redirect=" + encodeURIComponent("/planes"));
+      return;
+    }
+
+    // Si el usuario NO está autenticado y NO es plan PRO
     if (!user) {
       toast({
         title: "Inicia sesión",
@@ -70,13 +134,23 @@ const Plans = () => {
       return;
     }
 
-    // Verificar si es un plan PRO (temporalmente deshabilitado)
+    // Verificar si es un plan PRO - capturar interés en lugar de redirigir a checkout
     if (planId === "tenant_pro" || planId === "landlord_pro" || planId === "inmobiliaria_pro") {
-      toast({
-        variant: "default",
-        title: "Plan PRO próximamente",
-        description: "La compra del plan PRO todavía no está disponible. Estará disponible muy pronto. ¡Mantente atento!",
-      });
+      // Verificar si ya registró interés
+      if (registeredInterests.has(planId as ProPlanType)) {
+        toast({
+          title: "Ya tenemos registrado tu interés",
+          description: "Ya habías registrado tu interés en este plan anteriormente.",
+        });
+        return;
+      }
+
+      // Determinar rol del usuario
+      const userRole = determineUserRole(profile?.publisher_type, profile?.role);
+      const planType = planId as ProPlanType;
+
+      // Registrar interés
+      registerInterestMutation.mutate({ planType, role: userRole });
       return;
     }
 
@@ -219,10 +293,10 @@ const Plans = () => {
                   <span className="text-sm font-semibold">Planes Flexibles</span>
                 </div>
                 <h1 className="text-3xl md:text-4xl font-display font-bold text-foreground mb-4">
-                  Planes diseñados según cómo uses RenColombia
+                  Planes diseñados según cómo uses RentarColombia
                 </h1>
                 <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-                  RenColombia ofrece planes pensados para cada tipo de usuario.
+                  RentarColombia ofrece planes pensados para cada tipo de usuario.
                   Para mostrarte el plan adecuado, primero necesitamos saber
                   cómo quieres usar la plataforma.
                 </p>
@@ -516,7 +590,12 @@ const Plans = () => {
                       className="w-full"
                       size="lg"
                       onClick={() => handleSelectPlan(plan.id)}
-                      disabled={isActive || plan.price_monthly === 0}
+                      disabled={
+                        isActive || 
+                        plan.price_monthly === 0 || 
+                        registeredInterests.has(plan.id as ProPlanType) ||
+                        registerInterestMutation.isPending
+                      }
                     >
                       {isActive ? (
                         <>
@@ -527,6 +606,16 @@ const Plans = () => {
                         <>
                           <Shield className="w-4 h-4 mr-2" />
                           Ya lo tienes
+                        </>
+                      ) : registeredInterests.has(plan.id as ProPlanType) ? (
+                        <>
+                          <Check className="w-4 h-4 mr-2" />
+                          ✔️ Interés registrado
+                        </>
+                      ) : registerInterestMutation.isPending ? (
+                        <>
+                          <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                          Registrando...
                         </>
                       ) : plan.id === "tenant_pro" ? (
                         <>

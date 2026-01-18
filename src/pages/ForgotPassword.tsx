@@ -137,7 +137,7 @@ const ForgotPassword = () => {
               Tu próximo hogar te espera
             </h2>
             <p className="text-white/90 text-lg">
-              Únete a miles de colombianos que ya encontraron su hogar ideal a través de RenColombia.
+              Únete a miles de colombianos que ya encontraron su hogar ideal a través de RentarColombia.
             </p>
           </div>
         </div>

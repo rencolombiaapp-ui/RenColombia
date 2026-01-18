@@ -193,8 +193,8 @@ async function calculatePriceInsights(
           max: 0,
         },
         sample_size: 0,
-        data_sources: ["RenColombia Marketplace Data"],
-        data_sources_attribution: "Fuente: Datos del mercado RenColombia",
+        data_sources: ["RentarColombia Marketplace Data"],
+        data_sources_attribution: "Fuente: Datos del mercado RentarColombia",
         source: "own",
       };
 
@@ -243,8 +243,8 @@ async function calculatePriceInsights(
           max: 0,
         },
         sample_size: 0,
-        data_sources: ["RenColombia Marketplace Data"],
-        data_sources_attribution: "Fuente: Datos del mercado RenColombia",
+        data_sources: ["RentarColombia Marketplace Data"],
+        data_sources_attribution: "Fuente: Datos del mercado RentarColombia",
         source: "own",
       };
 
@@ -303,8 +303,8 @@ async function calculatePriceInsights(
           max: recommendedMax,
         },
         sample_size: sorted.length,
-        data_sources: ["RenColombia Marketplace Data"],
-        data_sources_attribution: "Fuente: Datos del mercado RenColombia",
+        data_sources: ["RentarColombia Marketplace Data"],
+        data_sources_attribution: "Fuente: Datos del mercado RentarColombia",
         source: "own",
       };
 
@@ -367,7 +367,7 @@ async function calculatePriceInsights(
       sample_size: sorted.length,
       data_sources: ["RenColombia Marketplace Data"],
       data_sources_attribution: "Fuente: Datos del mercado RenColombia",
-      source: "own", // Datos propios de RenColombia
+      source: "own", // Datos propios de RentarColombia
     };
 
     // Si hay datos suficientes (sample_size >= 3), usar datos propios y validar con DANE

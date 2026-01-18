@@ -57,7 +57,7 @@ export interface LegalDisclaimerProps {
  * Texto del disclaimer por defecto
  */
 const DEFAULT_DISCLAIMER_TEXT = 
-  "Este contrato es una plantilla generada automáticamente por RenColombia y no sustituye asesoría legal profesional. Recomendamos consultar con un abogado antes de continuar.";
+  "Este contrato es una plantilla generada automáticamente por RentarColombia y no sustituye asesoría legal profesional. Recomendamos consultar con un abogado antes de continuar.";
 
 /**
  * Texto del checkbox por defecto

@@ -231,7 +231,7 @@ function ContractEditor({ contractId }) {
 
       {/* Disclaimer */}
       <LegalDisclaimer
-        text="Este contrato es una plantilla generada automáticamente por RenColombia y no sustituye asesoría legal profesional. Recomendamos consultar con un abogado antes de enviar el contrato al inquilino."
+        text="Este contrato es una plantilla generada automáticamente por RentarColombia y no sustituye asesoría legal profesional. Recomendamos consultar con un abogado antes de enviar el contrato al inquilino."
         checkboxLabel="He leído y entendido el disclaimer legal. Confirmo que he revisado el contenido del contrato y entiendo que este es un template base que requiere revisión legal profesional."
         onAcceptanceChange={setDisclaimerAccepted}
         required={true}
